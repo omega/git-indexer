@@ -70,11 +70,11 @@ GitHubEvents.prototype.poll = function() {
 };
 GitHubEvents.prototype.onevent = function(entry) {
     // Now to send along the events in the more structured channels!
-    if (entry.type() == 'push' || entry.type() == 'commitcomment') {
+    if (entry.type() == 'commitcomment') {
         // Need to fix links in entry.content
         entry.content = entry.content.replace(/href="\/(.*?)"/g,
                 "href=\"https://github.com/$1\"");
-        this.emit("event", entry);
+        this.emit("comment", entry);
     }
 };
 /* AtomParser */

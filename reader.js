@@ -6,6 +6,7 @@ var gitteh = require("gitteh"),
     chainGang = require("chain-gang"),
     gitchain = chainGang.create({ workers: 1 }),
     chain = chainGang.create({workser: 1}),
+    monchain = chainGang.create({workser: 1}),
     path = require("path"),
     fs = require("fs"),
     exec = require("child_process").exec,
@@ -43,9 +44,30 @@ models.defineModels(mongoose, function() {
  */
 
 var githubevents = new GitHubEvents(config.feed);
-githubevents.on('event', function(entry) {
-    console.log("  event emitted: " + entry.type());
-    find_bugs(entry.content, entry);
+githubevents.on('comment', function(comment) {
+    //console.log("  comment emitted: " + comment.type());
+    // Lets try to locate this Commit on some Issue
+    Issue.findOne({'events.id': comment.commit()}, function(err, issue) {
+        if (err) {
+            console.log("ERROR: ", err);
+            return;
+        } else if (!issue) {
+            console.log("No issue found for comment", comment.commit().id, comment.repo().origin.repo);
+        } else {
+            var E = new EventM({
+                id: e.id,
+                user: e.repo().origin.user,
+                repo: e.repo().origin.repo,
+                date: new Date(e.published),
+                url: e.linkByRel("alternate")[0].href,
+                text: e.content
+            });
+            monchain.add(function(worker) {
+                issue.add_event(E);
+                worker.finish();
+            });
+        }
+    });
 });
 
 /*************** End of GitHubEvents ****************/
@@ -104,12 +126,12 @@ function update_github_repos() {
             }
             );
 }
-var GIT_LIMIT = 1;
+var GIT_LIMIT = 2;
 function process_github_repos(repos) {
     repos.forEach(function(repo) {
         //console.log("GIT_LIMIT: ", GIT_LIMIT);
-        if (GIT_LIMIT != 1) return;
-        GIT_LIMIT = 0;
+        if (GIT_LIMIT < 1) return;
+        GIT_LIMIT--;
         console.log(" - " + repo.name + " " + JSON.stringify(repo));
         Repo.findOne({'user': repo.owner, 'name': repo.name}, function(err, r) {
             if (!r && !err) {
@@ -134,8 +156,8 @@ function process_github_repos(repos) {
                             if (err) console.log("ERROR saving updated repo: " + err);
                         });
                     } else {
-                        console.log("path exists, triggering scan");
-                        r.scan(gitchain);
+                        console.log("path exists, triggering scan? OR NOT");
+                        //r.scan(gitchain);
                     }
                 });
             }
@@ -157,65 +179,4 @@ function repull_repos() {
         });
     });
 }
-
-function find_bugs(str, e) {
-    var bugs;
-    if (bugs = str.match(/([A-Z]+-\d+)/g)) {
-        bugs = unique(bugs);
-
-        // Filter out those FAKE TVGU-000 etc bugs
-        bugs = bugs.filter(function(el) {
-            return (!el.match(/-0+$/));
-        });
-        //console.log("  found bugs: " + bugs.join(", "));
-        // Only actually store if we have bugs left :p
-        if (bugs.length) store_event(bugs, e);
-    }
-}
-
-
-function store_event(bugs, e) {
-    console.log(" " + bugs.join(",") + "  -> EVENT:" + e.id + " "
-            + e.repo().origin.user + '/' + e.repo().origin.repo);
-    var link = e.linkByRel('alternate')[0];
-    var ev = new Event({
-        "id"  : e.id,
-        "user" : e.repo().origin.user,
-        "repo" : e.repo().origin.repo,
-        "date" : new Date(e.published),
-        "url"  : link.href,
-        "text" : e.content
-
-    });
-    bugs.forEach(function(bug) {
-        chain.add(function(worker) {
-            // First we try to locate this bug-id in our issues
-            Issue.findOne({ 'key': bug }, function(err, issue) {
-                if(err) console.log("ERROR finding: ", err);
-                if (!issue) {
-                    console.log("CREATING "  + bug);
-                    issue = new Issue({ 'key': bug });
-                } else {
-                    console.log("Found old issue: " + issue.key + "(looking for " + bug + ")");
-                }
-                issue.add_event(ev);
-                issue.save(function(err, obj) {
-                    if (err) {
-                        console.log("After insert?  " + bug + " : "
-                            + err + " :: " + issue.key);
-                    }
-                    worker.finish(err);
-                });
-            });
-        }, 'save_to_bug' + bug + ":" + e.id);
-    });
-}
-
-// HAX!
-function unique(inp) {
-    var o = {}, i, l = inp.length, r = [];
-    for(i=0; i<l;i+=1) o[inp[i]] = inp[i];
-    for(i in o) r.push(o[i]);
-    return r;
-};
 
