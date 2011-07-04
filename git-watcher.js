@@ -5,6 +5,7 @@ var events = require('events'),
     spawn = require("child_process").spawn,
     gitchain = chainGang.create({ workers: 2 })
 ;
+/*
 gitchain.on("add", function(name) {
     console.log("+GITCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
 });
@@ -14,15 +15,16 @@ gitchain.on("starting", function(name) {
 gitchain.on("finished", function(name) {
     console.log("-GITCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
 });
+*/
 var GitWatcher = function() {
     var self = this;
     events.EventEmitter.call(self);
     this.repos = [];
 
     // XXX: Setup a timer here to pull all repos?
-    this.timer = setTimeout(function() {
+    this.timer = setInterval(function() {
         self.repull();
-    }, 5000);
+    }, 60000);
 }
 ;
 
@@ -45,9 +47,14 @@ GitWatcher.prototype.add_repo = function(repo) {
         self.repos.push(repo);
         self.scan(repo);
     }
-    console.log(" GitWatcher".magenta.bold + " #repos: " + this.repos.length.toString().bold.red);
 };
 GitWatcher.prototype.scan = function(repo) {
+    if (!repo.cloned()) {
+        console.log("Turning a scan into a clone on ".red + repo.safename);
+        return gitchain.add(function(worker) {
+            repo.clone(worker);
+        }, "clone:" + repo.safename);
+    }
     var self = this;
     gitchain.add(function(worker) {
         var walker = new Walker(repo);
@@ -74,7 +81,8 @@ GitWatcher.prototype.new_repo = function(repo) {
 
 GitWatcher.prototype.repull = function() {
     var self = this;
-    console.log(" GitWatcher".magenta.bold + ": repull");
+    console.log(" GitWatcher".magenta.bold + ": repull  #repos: "
+            + this.repos.length.toString().bold.red);
 
     self.repos.forEach(function(repo) {
         gitchain.add(function(worker) {
@@ -103,11 +111,12 @@ Walker.prototype = Object.create(events.EventEmitter.prototype, {
 Walker.prototype.walk = function() {
     // Get a list of branches in this repo
     var self = this;
-    console.log(" WALKER: ".blue + self.repo.safename);
+    //console.log(" WALKER: ".blue + self.repo.safename);
     exec("git branch -r | grep -v '\\->'", {cwd: self.repo.filepath}, function(err, stdout, stderr) {
         if (err) {
             console.log("ERROR:".red.bold + " git branch -r failed on " + self.repo.safename,
                 err, stdout, stderr);
+            self.emit("end");
             return;
         }
         var branches = stdout.split(/\s+/g).filter(function(e) {
@@ -121,7 +130,7 @@ Walker.prototype.walk = function() {
         var walker = spawn("git", args, {cwd: self.repo.filepath});
         walker.on("exit", function(code) {
             //console.log("walker on ", self.repo, " exited: ", code);
-            console.log("-WALKER: ".blue + "  #revs: " + self.count.toString().red.bold);
+            //console.log("-WALKER: ".blue + "  #revs: " + self.count.toString().red.bold);
             self.emit("end");
         });
         walker.stdout.on("data", function(d) {

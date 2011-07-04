@@ -30,6 +30,7 @@ var sax = require('sax'),
         self.atomparser = new AtomParser();
         // XXX: This is quite ugly!
         self.atomparser.on('entry', function() {self.onevent(arguments[0]) });
+        self.timer = setInterval(function() { self.poll() }, 10000);
     },
     https = require('https'),
     URL = require('url')

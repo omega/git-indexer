@@ -5,10 +5,10 @@ var events = require("events"),
     colors = require('colors'),
     spawn = require("child_process").spawn
     ;
+var base;
 
-function defineModels(mongoose, fn) {
-
-
+function defineModels(mongoose, fn, BASE) {
+    if (BASE) base = BASE;
     var Schema = mongoose.Schema,
         ObjectId = mongoose.ObjectId;
 
@@ -60,28 +60,26 @@ function defineModels(mongoose, fn) {
         'filepath'   : String
     });
 
+    /* this returns true if we have a clone, false otherwise */
+    Repo.method("cloned", function() {
+        var self = this;
+        // XXX: prolly ugly to use Sync, but omg it would be so complicated!
+        if (path.existsSync(self.filepath)) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+
     Repo.method("clone", function(worker) {
         var repo = this;
+        if (repo.cloned()) return; // No need to clone again
         // Should shell out and clone this repo to base and set this.filepath
-        // XXX: Check that we have a clone!
-        /*
-        path.exists(r.filepath, function(exists) {
-            if (!exists) {
-                r.clone(self.repo_base);
-                r.save(function(err) {
-                    if (err) console.log("ERROR saving updated repo: " + err);
-                });
-            } else {
-                console.log("path exists, triggering scan? OR NOT");
-                //r.scan(gitchain);
-            }
-        });
-        */
-        console.log("Should clone the repo: " + repo.name + " into " + repo.filepath);
+        console.log("Should clone the repo: " + repo.name + " into " + repo.filepath + " BASE:" + base);
 
         exec("git clone " + repo.origin + " " + repo.safename , { cwd: base },
             function(err, stdout, stderr) {
-                //if (err) throw err;
+                if (err) console.log(err);
                 if (stderr) {
                     console.log("ERR: " + err + " : " + stderr);
                 }
@@ -96,6 +94,11 @@ function defineModels(mongoose, fn) {
     });
 
     Repo.method("pull", function(worker) {
+        if (!this.cloned()) {
+            // Need to clone it!
+            console.log("Turning a pull into a clone on ".red + this.safename);
+            return this.clone(worker);
+        }
         var repo = this;
         console.log("Pulling: ".blue + repo.safename);
         // Should run git pull in the filepath

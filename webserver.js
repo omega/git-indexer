@@ -2,6 +2,7 @@ var models = require('./models.js'),
     http   = require('http'),
     mongoose = require('mongoose'),
     url = require('url'),
+    colors = require('colors'),
     Issue
     ;
 
@@ -17,7 +18,7 @@ WebServer.prototype.start = function() {
     var self = this;
 
     http.createServer(function(req, resp) {
-        console.log("GOT REQ: " + JSON.stringify(req.headers) + " " + req.url);
+        console.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
         resp.writeHead(200, {"Content-Type": "application/json"});
         if (!r.query.issue) {

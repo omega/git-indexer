@@ -20,7 +20,7 @@ var
 ;
 
 var REPO_BASE =  config.paths.repo_base;
-
+/*
 commitchain.on("add", function(name) {
     console.log("+ISSCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
 });
@@ -30,13 +30,14 @@ commitchain.on("starting", function(name) {
 commitchain.on("finished", function(name) {
     console.log("-ISSCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
 });
-
+*/
 models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
     Event = mongoose.model("Event");
     Repo = mongoose.model("Repo");
     db = mongoose.connect("mongodb://localhost/jira");
-});
+    // XXX: Ugly to pass it here!
+}, REPO_BASE);
 
 
 var githubevents = new GitHubEvents(config.feed);
@@ -44,9 +45,9 @@ githubevents.on('comment', function(comment) {
     //console.log("  comment emitted: " + comment.type());
     // Lets try to locate this Commit on some Issue
     commitchain.add(function(worker) {
-        Issue.findOne({'events.id': comment.commit()}, function(err, issue) {
+        Issue.findOne({'events.id': comment.commit().id }, function(err, issue) {
             if (err) {
-                console.log("ERROR: ", err);
+                console.error("ERROR: ", err);
                 worker.finish();
                 return;
             } else if (!issue) {
@@ -54,17 +55,17 @@ githubevents.on('comment', function(comment) {
                 worker.finish();
             } else {
                 var E = new Event({
-                    id: e.id,
-                    user: e.repo().origin.user,
-                    repo: e.repo().origin.repo,
-                    date: new Date(e.published),
-                    url: e.linkByRel("alternate")[0].href,
-                    text: e.content
+                    id: comment.id,
+                    user: comment.repo().origin.user,
+                    repo: comment.repo().origin.repo,
+                    date: new Date(comment.published),
+                    url: comment.linkByRel("alternate")[0].href,
+                    text: comment.content
                 });
                 issue.add_event(E, worker);
             }
         });
-    }, "save:" + E.id);
+    }, "save:" + comment.id);
 });
 
 var gitwatcher = new GitWatcher();
@@ -81,7 +82,7 @@ gitwatcher.on('commit', function(commit) {
                         console.log("ERROR: ", err);
                         return;
                     } else if (!issue) {
-                        console.log("CREATING "  + bug);
+                        //console.log("CREATING "  + bug);
                         issue = new Issue({ 'key': bug });
                     } else {
                         //console.log("Found old issue ", bug);
@@ -108,7 +109,7 @@ githubwatcher.on('new-repo', function(repo) {
     gitwatcher.new_repo(repo);
 });
 githubwatcher.on('old-repo', function(repo) {
-    console.log(" old-repo".bold);
+    //console.log(" old-repo".bold);
     gitwatcher.add_repo(repo);
 });
 

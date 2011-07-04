@@ -24,9 +24,9 @@ var GitHubWatcher = function(config) {
             github_auth, spore.middlewares.json(),
             '../../other/spore-descriptions/services/github/organization.json'
             );
-    self.timer = setTimeout(function() {
+    self.timer = setInterval(function() {
         self.poll();
-    }, 5000);
+    }, 60000);
 }
 ;
 
@@ -53,7 +53,7 @@ GitHubWatcher.prototype.poll = function() {
             }
             );
 };
-var GIT_LIMIT = 2;
+var GIT_LIMIT = 200;
 GitHubWatcher.prototype.process_github_repos = function(repos) {
     var self = this;
     repos.forEach(function(repo) {
@@ -61,7 +61,7 @@ GitHubWatcher.prototype.process_github_repos = function(repos) {
         //console.log("GIT_LIMIT: ", GIT_LIMIT);
         if (GIT_LIMIT < 1) return;
         GIT_LIMIT--;
-        console.log(" - " + repo.name);
+        //console.log(" - " + repo.name);
         Repo.findOne({'user': repo.owner, 'name': repo.name}, function(err, r) {
             if (err) {
                 console.log("ERROR Fetching repo: " + err);
@@ -77,11 +77,10 @@ GitHubWatcher.prototype.process_github_repos = function(repos) {
                 });
                 self.emit("new-repo", r);
             } else {
-                console.log(" Found repo: " + repo);
                 self.emit("old-repo", r);
             }
         });
     });
-    GIT_LIMIT = 2;
+    GIT_LIMIT = 200;
 }
 
