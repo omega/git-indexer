@@ -3,20 +3,9 @@ var events = require("events"),
     path = require("path"),
     exec = require("child_process").exec,
     colors = require('colors'),
-    spawn = require("child_process").spawn,
-    chainGang = require('chain-gang'),
-    commitchain = chainGang.create({workers: 1})
+    spawn = require("child_process").spawn
     ;
 
-commitchain.on("add", function(name) {
-    console.log("+ISSCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
-});
-commitchain.on("starting", function(name) {
-    console.log(">ISSCHAIN: ".yellow + name.replace(/([a-z]{4})/, "$1".bold));
-});
-commitchain.on("finished", function(name) {
-    console.log("-ISSCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
-});
 function defineModels(mongoose, fn) {
 
 
@@ -54,24 +43,8 @@ function defineModels(mongoose, fn) {
             self.save(function(err, obj) {
                 if (err) {
                     console.log("Error saving issue: ", err, self.key);
-                    // We need to fetch this issue then, and blah!
-                    var IssueM = mongoose.model("Issue");
-
-                    IssueM.findOne({'key': self.key}, function(err, issue) {
-                        if (err) console.log("ERROR fetching issue: " + self.key + ": " + err);
-                        if (self.find_event(e.id).length == 0) {
-                            self.events.push(e);
-                            self.save(function(err, obj) {
-                                if (err) console.log("ERROR SAVING AGAIN:" + err);
-                                worker.finish();
-                            })
-                        } else {
-                            worker.finish();
-                        }
-                    });
-                } else {
-                    worker.finish();
                 }
+                worker.finish();
             });
         } else {
             worker.finish(); // nothing to do here

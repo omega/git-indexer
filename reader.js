@@ -4,15 +4,12 @@
 var config = require('confu')(__dirname, 'config.json');
 var
     chainGang = require("chain-gang"),
-    gitchain = chainGang.create({ workers: 1 }),
-    chain = chainGang.create({workser: 1}),
-    monchain = chainGang.create({workser: 1}),
+    commitchain = chainGang.create({workers: 1}),
     path = require("path"),
     fs = require("fs"),
     exec = require("child_process").exec,
     mongoose = require("mongoose"),
     models = require('./models'),
-    url = require('url'),
     timers = {},
     GitHubEvents = require('./atom'),
     GitHubWatcher = require('./github-watcher'),
@@ -24,6 +21,15 @@ var
 
 var REPO_BASE =  config.paths.repo_base;
 
+commitchain.on("add", function(name) {
+    console.log("+ISSCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
+});
+commitchain.on("starting", function(name) {
+    console.log(">ISSCHAIN: ".yellow + name.replace(/([a-z]{4})/, "$1".bold));
+});
+commitchain.on("finished", function(name) {
+    console.log("-ISSCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
+});
 
 models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
@@ -37,64 +43,63 @@ var githubevents = new GitHubEvents(config.feed);
 githubevents.on('comment', function(comment) {
     //console.log("  comment emitted: " + comment.type());
     // Lets try to locate this Commit on some Issue
-    Issue.findOne({'events.id': comment.commit()}, function(err, issue) {
-        if (err) {
-            console.log("ERROR: ", err);
-            return;
-        } else if (!issue) {
-            console.log("No issue found for comment", comment.commit().id, comment.repo().origin.repo);
-        } else {
-            var E = new Event({
-                id: e.id,
-                user: e.repo().origin.user,
-                repo: e.repo().origin.repo,
-                date: new Date(e.published),
-                url: e.linkByRel("alternate")[0].href,
-                text: e.content
-            });
-            monchain.add(function(worker) {
-                issue.add_event(E);
-            }, "save:" + E.id);
-        }
-    });
+    commitchain.add(function(worker) {
+        Issue.findOne({'events.id': comment.commit()}, function(err, issue) {
+            if (err) {
+                console.log("ERROR: ", err);
+                worker.finish();
+                return;
+            } else if (!issue) {
+                console.log("No issue found for comment", comment.commit().id, comment.repo().origin.repo);
+                worker.finish();
+            } else {
+                var E = new Event({
+                    id: e.id,
+                    user: e.repo().origin.user,
+                    repo: e.repo().origin.repo,
+                    date: new Date(e.published),
+                    url: e.linkByRel("alternate")[0].href,
+                    text: e.content
+                });
+                issue.add_event(E, worker);
+            }
+        });
+    }, "save:" + E.id);
 });
 
 var gitwatcher = new GitWatcher();
 gitwatcher.on('commit', function(commit) {
     //console.log("  commit emitted");
-    /*
     if (typeof(commit.message) == "undefined") return;
     var bugs;
     if (bugs = commit.message.match(/([A-Z]+-\d+)/g)) {
         //console.log("    has bugs");
         bugs.forEach(function(bug) {
-            repo.store_commit(bug, commit);
+            commitchain.add(function(worker) {
+                Issue.findOne({key: bug}, function(err, issue) {
+                    if (err) {
+                        console.log("ERROR: ", err);
+                        return;
+                    } else if (!issue) {
+                        console.log("CREATING "  + bug);
+                        issue = new Issue({ 'key': bug });
+                    } else {
+                        //console.log("Found old issue ", bug);
+                    }
+                    var E = new Event({
+                        id: commit.sha,
+                        user: commit.repo.user,
+                        repo: commit.repo.name,
+                        url: 'https://github.com/' + commit.repo.user + '/' + commit.repo.name +
+                        '/commit/' + commit.sha,
+                        date: commit.date,
+                        text: commit.message
+                    });
+                    issue.add_event(E, worker);
+                });
+            }, "save:" + bug + ":" + commit.sha);
         });
     }
-        IssueM.findOne({key: bug}, function(err, issue) {
-            if (err) {
-                console.log("ERROR: ", err);
-                return;
-            } else if (!issue) {
-                console.log("CREATING "  + bug);
-                issue = new IssueM({ 'key': bug });
-            } else {
-                //console.log("Found old issue ", bug);
-            }
-            var E = new EventM({
-                id: commit.sha,
-                user: self.user,
-                repo: self.name,
-                url: 'https://github.com/' + self.user + '/' + self.repo +
-                    '/commit/' + commit.sha,
-                date: commit.date,
-                text: commit.message
-            });
-            commitchain.add(function(worker) {
-                issue.add_event(E, worker);
-            }, "save:" + E.id);
-        });
-    */
 });
 
 var githubwatcher = new GitHubWatcher(config);

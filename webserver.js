@@ -1,6 +1,7 @@
 var models = require('./models.js'),
     http   = require('http'),
     mongoose = require('mongoose'),
+    url = require('url'),
     Issue
     ;
 

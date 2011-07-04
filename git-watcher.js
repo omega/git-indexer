@@ -136,6 +136,7 @@ Walker.prototype.walk = function() {
                     email: controls[1],
                     date: controls[2],
                     message: splits[1],
+                    repo: self.repo
                 });
             });
 
