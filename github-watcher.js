@@ -24,9 +24,9 @@ var GitHubWatcher = function(config) {
             github_auth, spore.middlewares.json(),
             '../../other/spore-descriptions/services/github/organization.json'
             );
-    self.timer = setInterval(function() {
-        self.poll();
-    }, 60000);
+    //self.timer = setInterval(function() {
+        //self.poll();
+    //}, 60000);
 }
 ;
 
