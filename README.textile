@@ -1,0 +1,36 @@
+h1. git-indexer
+
+This isn't really an indexer, so it is lying a bit right of the bat. What it really
+does is look for JIRA issue IDs in commit messages in git, and then looks on github
+for comments on those commits, storing it all on the correct issue in a mongodb
+
+There is a second half of this, that is a jira plugin to display this as an issue
+panel, but that is not quite ready for prime time, but it is comming
+
+h1. config
+
+We look for a config.json alongside the app, containing the following:
+
+<pre><code>
+{
+    "org": "", // Your organization, we don't support single users atm
+    "web": {
+        "port": 8091 // Port you want the web server to listen to
+    },
+    "paths": {
+        "repo_base": "data/" // Where to store the cloned repos
+    },
+    "github_auth": {
+        "user": "USERNAME/token", // username, with /token
+        "pw"  : "A__TOKEN__HERE" // Your github token
+    },
+    "feed": "https://github.com/organizations/ORGANIZATION/USERNAME.private.atom?token=A__TOKEN__HERE", // This could probably be constructed from other info in this file, but I am lazy
+    "mongo": "mongodb://localhost/jira" // The mongodb to connect to
+}
+</code></pre>
+
+h1. what is what?
+
+You start up @reader.js@ to get it all running. It will clone and index all your repos for you
+
+
