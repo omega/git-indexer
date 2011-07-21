@@ -106,7 +106,7 @@ gitwatcher.on('commit', function(commit) {
 
 var githubwatcher = new GitHubWatcher(config);
 githubwatcher.on('new-repo', function(repo) {
-    console.log("  new-repo emitted", repo);
+    //console.log("  new-repo emitted", repo);
     gitwatcher.new_repo(repo);
 });
 githubwatcher.on('old-repo', function(repo) {
