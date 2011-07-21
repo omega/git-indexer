@@ -18,7 +18,6 @@ var
     colors = require('colors'),
     db, Issue, Commit, Repo, Comment
 ;
-
 var REPO_BASE =  config.paths.repo_base;
 /*
 commitchain.on("add", function(name) {
@@ -38,6 +37,7 @@ models.defineModels(mongoose, function() {
     db = mongoose.connect("mongodb://localhost/jira");
     // XXX: Ugly to pass it here!
 }, REPO_BASE);
+
 
 
 var githubevents = new GitHubEvents(config.feed);
@@ -113,8 +113,8 @@ githubwatcher.on('old-repo', function(repo) {
     gitwatcher.add_repo(repo);
 });
 
-var ws = new WebServer();
-ws.start();
+//var ws = new WebServer();
+//ws.start();
 
 
 
@@ -136,4 +136,33 @@ timers.feedreader = setTimeout(function() {
     githubevents.poll();
     githubwatcher.poll();
 }, 1);
+/*
+var memory = process.memoryUsage();
+var max = memory;
+timers.memory = setInterval(function() {
+    var now = process.memoryUsage();
+    var MS = "";
+    for (var i in now) {
+        var rec = false;
+        if (now[i] > max[i]) {
+            max[i] = now[i];
+            rec = true;
+        }
+        var pst = parseInt(now[i] * 100 / max[i]);
+        var d = now[i] - memory[i];
+        MS = MS + (rec ? i.red : i) + ": " + now[i].toString().bold;
+
+        if (d > 0) {
+            MS = MS + (" (+" + d + ")").red;
+        } else {
+            MS = MS + (" (" + d + ")").green;
+        }
+        MS = MS + " " + (pst + "%").magenta + "   ";
+    }
+    console.log(MS);
+    memory = now;
+}, 1000);
+
+*/
+
 //timers.feedreader = setInterval(function() { githubevents.poll() }, 5000);
