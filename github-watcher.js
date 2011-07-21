@@ -20,9 +20,14 @@ var GitHubWatcher = function(config) {
             config.github_auth.user, config.github_auth.pw
             );
 
-    self.github = spore.createClient(
-            github_auth, spore.middlewares.json(),
-            '../../other/spore-descriptions/services/github/organization.json'
+    spore.createClientWithUrl(
+            'https://raw.github.com/omega/api-description/master/services/github/organization.json',
+            function(err, client) {
+                if (err) return console.log("ERROR: ".red.bold + " creating spore client failed: " + err);
+                client.enable(github_auth);
+                client.enable(spore.middlewares.json());
+                self.github = client;
+            }
             );
     //self.timer = setInterval(function() {
         //self.poll();
@@ -43,6 +48,7 @@ GitHubWatcher.prototype = Object.create(events.EventEmitter.prototype, {
 
 GitHubWatcher.prototype.poll = function() {
     var self = this;
+    if(!self.github) return console.log("WARN:".yellow + " spore client not ready");
     console.log("Scheduled: Updating repos from GitHub.");
     this.github.get_organization_repositories(
             {format: 'json', org: this.org},
