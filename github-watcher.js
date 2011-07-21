@@ -48,8 +48,12 @@ GitHubWatcher.prototype = Object.create(events.EventEmitter.prototype, {
 
 GitHubWatcher.prototype.poll = function() {
     var self = this;
-    if(!self.github) return console.log("WARN:".yellow + " spore client not ready");
-    console.log("Scheduled: Updating repos from GitHub.");
+    if(!self.github) {
+        // Try again in a little while
+        setTimeout(function() { self.poll() }, 2000);
+        return console.log("WARN:".yellow + " spore client not ready");
+    }
+    console.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
     this.github.get_organization_repositories(
             {format: 'json', org: this.org},
             function(err, resp) {
