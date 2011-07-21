@@ -114,10 +114,8 @@ Walker.prototype.walk = function() {
     //console.log(" WALKER: ".blue + self.repo.safename);
     exec("git branch -r | grep -v '\\->'", {cwd: self.repo.filepath}, function(err, stdout, stderr) {
         if (err) {
-            console.log("ERROR:".red.bold + " git branch -r failed on " + self.repo.safename,
-                err, stdout, stderr);
-            self.emit("end");
-            return;
+            console.log("ERROR:".red.bold + " git branch -r failed on " + self.repo.safename);
+            return self.emit("end");
         }
         var branches = stdout.split(/\s+/g).filter(function(e) {
             return (e != "")
