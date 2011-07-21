@@ -3,11 +3,12 @@ var models = require('./models.js'),
     mongoose = require('mongoose'),
     url = require('url'),
     colors = require('colors'),
-    Issue
+    Issue, db
     ;
 
 models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue")
+    db = mongoose.connect("mongodb://localhost/jira");
 });
 
 var WebServer = function(port) {
@@ -29,7 +30,8 @@ WebServer.prototype.start = function() {
         }
         Issue.findOne({'key': r.query.issue}, function(err, issue) {
             if (err) console.log("ERROR: " + err);
-            resp.write(JSON.stringify(issue));
+            if (issue) resp.write(JSON.stringify(issue));
+            if (!issue) resp.wirte(JSON.stringify({'error': "No issue found with that key"}));
             resp.end();
         });
     }).listen(self.port);
@@ -37,3 +39,5 @@ WebServer.prototype.start = function() {
 };
 
 module.exports = WebServer;
+
+new WebServer().start();
