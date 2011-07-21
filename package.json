@@ -1,0 +1,14 @@
+{
+    "name": "git-indexer"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "chain-gang": ">= 1.0.0"
+    , "confu": ">= 0.0.3"
+    , "mongoose": ">= 1.5.0"
+    , "htmlparser": ">= 1.7.3"
+    , "sax": ">= 0.1.4"
+    , "soupselect": ">= 0.2.0"
+    , "colors": ">= 0.5.0"
+  }
+}
