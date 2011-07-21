@@ -6,17 +6,17 @@ var models = require('./models.js'),
     Issue, db
     ;
 
-models.defineModels(mongoose, function() {
-    Issue = mongoose.model("Issue")
-    db = mongoose.connect("mongodb://localhost/jira");
-});
-
-var WebServer = function(port) {
-    this.port = port || 8091;
+var WebServer = function(config) {
+    this.port = config.web.port || 8091;
+    this.mongo = config.mongo;
 };
 
 WebServer.prototype.start = function() {
     var self = this;
+    models.defineModels(mongoose, function() {
+        Issue = mongoose.model("Issue")
+        db = mongoose.connect(self.mongo);
+    });
 
     http.createServer(function(req, resp) {
         console.log("->WebServer: ".cyan + req.url);
@@ -29,7 +29,7 @@ WebServer.prototype.start = function() {
             return;
         }
         Issue.findOne({'key': r.query.issue}, function(err, issue) {
-            if (err) console.log("ERROR: " + err);
+            if (err) console.log("ERROR: ".red + err);
             if (issue) resp.write(JSON.stringify(issue));
             if (!issue) resp.wirte(JSON.stringify({'error': "No issue found with that key"}));
             resp.end();
@@ -40,4 +40,4 @@ WebServer.prototype.start = function() {
 
 module.exports = WebServer;
 
-new WebServer().start();
+//new WebServer().start();
