@@ -137,6 +137,9 @@ timers.feedreader = setTimeout(function() {
     githubevents.poll();
     githubwatcher.poll();
 }, 1);
+timers.repo_fetcher = setInterval(function() {
+    githubwatcher.poll();
+}, 60 * 1000);
 /*
 var memory = process.memoryUsage();
 var max = memory;
