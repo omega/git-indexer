@@ -58,6 +58,7 @@ GitHubWatcher.prototype.poll = function() {
             {format: 'json', org: this.org},
             function(err, resp) {
                 if (err) console.log("ERROR: ".red + err);
+                if (typeof(resp.body.repositories) == "undefined") return console.log("ERROR:".red.bold + " No repositories found in response: ", resp);
                 console.log("  GitHub: ".cyan + resp.body.repositories.length);
                 self.process_github_repos(resp.body.repositories);
             }
