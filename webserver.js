@@ -31,7 +31,7 @@ WebServer.prototype.start = function() {
         Issue.findOne({'key': r.query.issue}, function(err, issue) {
             if (err) console.log("ERROR: ".red + err);
             if (issue) resp.write(JSON.stringify(issue));
-            if (!issue) resp.wirte(JSON.stringify({'error': "No issue found with that key"}));
+            if (!issue) resp.write(JSON.stringify({'error': "No issue found with that key"}));
             resp.end();
         });
     }).listen(self.port);
