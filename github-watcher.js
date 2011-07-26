@@ -75,16 +75,16 @@ GitHubWatcher.prototype.process_github_repos = function(repos) {
         //console.log(" - " + repo.name);
         Repo.findOne({'user': repo.owner, 'name': repo.name}, function(err, r) {
             if (err) {
-                console.log("ERROR Fetching repo: " + err);
+                console.log("ERROR".red.bold + " Fetching repo: " + err);
             } else if (!r) {
-                console.log("Not found, but no error, lets save!");
+                console.log("INFO".blue + " New repo found: " + repo.name);
                 r = new Repo({
                     user: repo.owner,
                     name: repo.name
                 });
                 r.filepath = path.join(self.repo_base, r.safename);
                 r.save(function(err) {
-                    if (err) console.log("ERROR inserting repo: " + err);
+                    if (err) console.log("ERROR".red.bold + " inserting repo: " + err);
                 });
                 self.emit("new-repo", r);
             } else {
