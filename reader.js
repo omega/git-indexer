@@ -19,7 +19,6 @@ var
     db, Issue, Commit, Repo, Comment
 ;
 new WebServer(config).start();
-var REPO_BASE =  config.paths.repo_base;
 /*
 commitchain.on("add", function(name) {
     console.log("+ISSCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
@@ -37,7 +36,7 @@ models.defineModels(mongoose, function() {
     Repo = mongoose.model("Repo");
     db = mongoose.connect(config.mongo);
     // XXX: Ugly to pass it here!
-}, REPO_BASE);
+}, config);
 
 
 

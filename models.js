@@ -6,9 +6,14 @@ var events = require("events"),
     spawn = require("child_process").spawn
     ;
 var base;
+var git_auth;
 
-function defineModels(mongoose, fn, BASE) {
-    if (BASE) base = BASE;
+function defineModels(mongoose, fn, config) {
+    if (config) {
+        if (config.paths.repo_base) base = config.paths.repo_base;
+        if (config.git_auth) git_auth = config.git_auth;
+    }
+
     var Schema = mongoose.Schema,
         ObjectId = mongoose.ObjectId;
 
@@ -77,17 +82,28 @@ function defineModels(mongoose, fn, BASE) {
         // Should shell out and clone this repo to base and set this.filepath
         console.log("Should clone the repo: " + repo.name + " into " + repo.filepath + " BASE:" + base);
 
-        exec("git clone " + repo.origin + " " + repo.safename , { cwd: base },
+        exec("git clone " + repo.real_origin() + " " + repo.safename , { cwd: base },
             function(err, stdout, stderr) {
-                if (err) console.log(err);
-                if (stderr) {
-                    console.log("ERR: " + err + " : " + stderr);
+                if (err || stderr) {
+                    console.log("ERR: ".red.bold + err + " : " + stderr);
+                } else {
+                    console.log("INFO: ".blue + " Clone of " + repo.safename + " completed");
                 }
                 worker.finish(err);
             });
     });
     Repo.virtual("origin").get(function() {
-        return "git@github.com:" + this.user + "/" + this.name + ".git";
+        return "git@github.com:" + this.path;
+    });
+    Repo.virtual("path").get(function() {
+        return this.user + "/" + this.name + ".git";
+    });
+    Repo.method("real_origin", function() {
+        if (typeof(git_auth) == "undefined") {
+            return this.origin;
+        } else {
+            return "https://" + git_auth.user + ":" + git_auth.pw + "@github.com/" + this.path;
+        }
     });
     Repo.virtual("safename").get(function() {
         return this.user + "-" + this.name;
