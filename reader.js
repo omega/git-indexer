@@ -105,13 +105,26 @@ gitwatcher.on('commit', function(commit) {
 
 var githubwatcher = new GitHubWatcher(config);
 githubwatcher.on('new-repo', function(repo) {
-    //console.log("  new-repo emitted", repo);
+    if (!is_included(repo.name)) return;
+    console.log("  new-repo emitted", repo);
     gitwatcher.new_repo(repo);
 });
 githubwatcher.on('old-repo', function(repo) {
-    //console.log(" old-repo".bold);
+    if (!is_included(repo.name)) return;
+    console.log(" old-repo".bold, repo);
     gitwatcher.add_repo(repo);
 });
+
+function is_included(reponame) {
+    if (!config.repos) return true; // No repos restriction
+
+    if (config.repos.inc) {
+        return config.repos.inc.some(function(v) {
+            return reponame == v;
+        });
+    }
+    return true; // Default to not filtered
+}
 
 //var ws = new WebServer();
 //ws.start();
