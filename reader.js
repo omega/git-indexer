@@ -35,9 +35,11 @@ models.defineModels(mongoose, function() {
     Event = mongoose.model("Event");
     Repo = mongoose.model("Repo");
     if (config.mongo.indexOf(",") != -1) {
+        console.log("Connecting to a replicaSet: ", config.mongo);
         // Replica set
         db = mongoose.connectSet(config.mongo);
     } else {
+        console.log("Connecting to a single mongodb: ", config.mongo);
         db = mongoose.connect(config.mongo);
     }
 
