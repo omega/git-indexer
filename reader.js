@@ -121,12 +121,12 @@ gitwatcher.on('commit', function(commit) {
 var githubwatcher = new GitHubWatcher(config);
 githubwatcher.on('new-repo', function(repo) {
     if (!is_included(repo.name)) return;
-    console.log("  new-repo emitted", repo);
+    //console.log("  new-repo emitted", repo);
     gitwatcher.new_repo(repo);
 });
 githubwatcher.on('old-repo', function(repo) {
     if (!is_included(repo.name)) return;
-    console.log(" old-repo".bold, repo);
+    //console.log(" old-repo".bold, repo);
     gitwatcher.add_repo(repo);
 });
 
