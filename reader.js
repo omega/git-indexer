@@ -34,7 +34,13 @@ models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
     Event = mongoose.model("Event");
     Repo = mongoose.model("Repo");
-    db = mongoose.connect(config.mongo);
+    if (config.mongo.indexOf(",") != -1) {
+        // Replica set
+        db = mongoose.connectSet(config.mongo);
+    } else {
+        db = mongoose.connect(config.mongo);
+    }
+
     // XXX: Ugly to pass it here!
 }, config);
 
