@@ -18,7 +18,6 @@ var
     colors = require('colors'),
     db, Issue, Commit, Repo, Comment
 ;
-new WebServer(config).start();
 /*
 commitchain.on("add", function(name) {
     console.log("+ISSCHAIN: ".green + name.replace(/([a-z]{4})/, "$1".bold));
@@ -30,25 +29,30 @@ commitchain.on("finished", function(name) {
     console.log("-ISSCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
 });
 */
+var mongo_connector = function(uris, mongoose, cb) {
+    var error_handler = function(err) {
+        if (err) console.log("ERROR: ".red.bold, err);
+        if (typeof(cb) != "undefined") cb(err);
+    };
+    if (uris.indexOf(",") != -1) {
+        console.log("connecting to a replicaSet: ", uris);
+        return mongoose.connectSet(uris, error_handler);
+    } else {
+        console.log("Connecting to a single mongo instance: ", uris);
+        return mongoose.connect(uris, error_handler);
+    }
+};
 models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
     Event = mongoose.model("Event");
     Repo = mongoose.model("Repo");
-    var error_handler = function(err) {
-        if (err) console.log("ERROR: ".red.bold, err);
-    };
-    if (config.mongo.indexOf(",") != -1) {
-        console.log("Connecting to a replicaSet: ", config.mongo);
-        // Replica set
-        db = mongoose.connectSet(config.mongo, error_handler);
-    } else {
-        console.log("Connecting to a single mongodb: ", config.mongo);
-        db = mongoose.connect(config.mongo, error_handler);
-    }
-
+    db = mongo_connector(config.mongo, mongoose, function(err) {
+        if (!err) {
+            new WebServer(config, mongo_connector).start();
+        }
+    });
     // XXX: Ugly to pass it here!
 }, config);
-
 
 
 var githubevents = new GitHubEvents(config.feed);

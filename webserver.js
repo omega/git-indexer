@@ -6,16 +6,17 @@ var models = require('./models.js'),
     Issue, db
     ;
 
-var WebServer = function(config) {
+var WebServer = function(config, connector) {
     this.port = config.web.port || 8091;
     this.mongo = config.mongo;
+    this.connector = connector;
 };
 
 WebServer.prototype.start = function() {
     var self = this;
     models.defineModels(mongoose, function() {
-        Issue = mongoose.model("Issue")
-        db = mongoose.connect(self.mongo);
+        Issue = mongoose.model("Issue");
+        db = self.connector(self.mongo, mongoose);
     });
 
     http.createServer(function(req, resp) {
