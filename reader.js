@@ -34,13 +34,16 @@ models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
     Event = mongoose.model("Event");
     Repo = mongoose.model("Repo");
+    var error_handler = function(err) {
+        if (err) console.log("ERROR: ".red.bold, err);
+    };
     if (config.mongo.indexOf(",") != -1) {
         console.log("Connecting to a replicaSet: ", config.mongo);
         // Replica set
-        db = mongoose.connectSet(config.mongo);
+        db = mongoose.connectSet(config.mongo, error_handler);
     } else {
         console.log("Connecting to a single mongodb: ", config.mongo);
-        db = mongoose.connect(config.mongo);
+        db = mongoose.connect(config.mongo, error_handler);
     }
 
     // XXX: Ugly to pass it here!
