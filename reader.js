@@ -133,7 +133,7 @@ githubwatcher.on('old-repo', function(repo) {
 function is_included(reponame) {
     if (!config.repos) return true; // No repos restriction
     if (config.repos.exc) {
-        return !config.repos.inc.some(function(v) {
+        return !config.repos.exc.some(function(v) {
             return reponame == v;
         });
     }
