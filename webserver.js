@@ -31,7 +31,15 @@ WebServer.prototype.start = function() {
         }
         Issue.findOne({'key': r.query.issue}, function(err, issue) {
             if (err) console.log("ERROR: ".red + err);
-            if (issue) resp.write(JSON.stringify(issue));
+
+            if (issue) {
+                // Should re-sort the events
+                issue.events = issue.events.sort(function(a, b) {
+                    if (!b.date || !a.date) return 0; // undetermined
+                    return a.date.getTime() - b.date.getTime();
+                });
+                resp.write(JSON.stringify(issue));
+            }
             if (!issue) resp.write(JSON.stringify({'error': "No issue found with that key"}));
             resp.end();
         });
