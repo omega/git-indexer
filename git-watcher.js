@@ -121,7 +121,10 @@ Walker.prototype.walk = function() {
             return (e != "")
         });
         //console.log("BRANCHES: ", branches);
-        var args = ["log", "--pretty=%H;%ae;%ai;X;%s"];
+        // the format is ;Y;<sha>;<email>;<date>;X;message;Z;
+        // We have the ;Y|X|Z; magic markers to work with the damn
+        // buffering :/
+        var args = ["log", "--pretty=;Y;%H;%ae;%ai;X;%s;Z;"];
         args = args.concat(branches);
         //console.log("args: ", args);
         // exec a git log --pretty="%H;%ae;%ai;%s" <all branches>
@@ -131,10 +134,27 @@ Walker.prototype.walk = function() {
             //console.log("-WALKER: ".blue + "  #revs: " + self.count.toString().red.bold);
             self.emit("end");
         });
+        var buffer = null;
         walker.stdout.on("data", function(d) {
-            //console.log("got: " + d);
+            //console.log("DATA".yellow);
+            if (buffer) {
+                //console.log("  Have spill-over buffer: ".green, buffer);
+                d = buffer + d;
+                buffer = null;
+            }
             d.toString().split(/\n/).forEach(function(line) {
                 if (line == '') return;
+                // If we do not match our "line" regexp, we set the buffer for
+                // next iteration, and then we prepend that to d
+                var m = line.match(/^;Y;(.*);Z;$/);
+                //console.log(m);
+                if (!m) {
+                    buffer = line;
+                    return;
+                } else {
+                    line = m[1];
+                }
+                //console.log("line: ", line);
                 var splits = line.toString().split(/;X;/);
                 var controls = splits[0].split(";");
                 self.count = self.count + 1;
