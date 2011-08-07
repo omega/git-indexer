@@ -55,27 +55,26 @@ models.defineModels(mongoose, function() {
 }, config);
 
 
-var githubevents = new GitHubEvents(config.feed);
+var githubevents = new GitHubEvents(config);
 githubevents.on('comment', function(comment) {
-    //console.log("  comment emitted: " + comment.type());
     // Lets try to locate this Commit on some Issue
     commitchain.add(function(worker) {
-        Issue.findOne({'events.id': comment.commit().id }, function(err, issue) {
+        Issue.findOne({'events.id': comment.commit_id }, function(err, issue) {
             if (err) {
                 console.error("ERROR: ", err);
                 worker.finish();
                 return;
             } else if (!issue) {
-                console.log("No issue found for comment", comment.commit().id, comment.repo().origin.repo);
+                console.log("No issue found for comment", comment.commit_id, comment.repo.name);
                 worker.finish();
             } else {
                 var E = new Event({
-                    id: comment.id,
-                    user: comment.repo().origin.user,
-                    repo: comment.repo().origin.repo,
-                    date: new Date(comment.published),
-                    url: comment.linkByRel("alternate")[0].href,
-                    text: comment.content,
+                    id: "comment:" + comment.id,
+                    user: comment.repo.user,
+                    repo: comment.repo.name,
+                    date: new Date(comment.created_at),
+                    url: comment.url,
+                    text: comment.body_html,
                     gravatar: comment.gravatar
                 });
                 issue.add_event(E, worker);
@@ -125,11 +124,13 @@ githubwatcher.on('new-repo', function(repo) {
     if (!is_included(repo.name)) return;
     //console.log("  new-repo emitted", repo);
     gitwatcher.new_repo(repo);
+    githubevents.add_repo(repo);
 });
 githubwatcher.on('old-repo', function(repo) {
     if (!is_included(repo.name)) return;
     //console.log(" old-repo".bold, repo);
     gitwatcher.add_repo(repo);
+    githubevents.add_repo(repo);
 });
 
 function is_included(reponame) {
@@ -168,7 +169,6 @@ function is_included(reponame) {
 //timers.pull = setTimeout(repull_repos, 3000);
 
 timers.feedreader = setTimeout(function() {
-    githubevents.poll();
     githubwatcher.poll();
 }, 1);
 timers.repo_fetcher = setInterval(function() {
