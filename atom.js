@@ -45,7 +45,7 @@ GitHubEvents.prototype.add_repo = function(repo) {
     }
 };
 GitHubEvents.prototype.mkreq = function(user, repo, page) {
-    if (!page) page = 1;
+    if (!page) page = 0;
     return {
         host: "api.github.com",
         port: 443,
@@ -88,7 +88,7 @@ GitHubEvents.prototype.poll = function(repo) {
                     worker.finish();
                     setTimeout(function() {
                         self.poll(repo);
-                    }, 60 * 1000); // Wait for a while, then poll it again?
+                    }, 10 * 60 * 1000); // Wait for a while, then poll it again?
                 });
             } else {
                 console.log("ERROR:".red.bold + " fetching comments: ", res.statusCode);
