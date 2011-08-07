@@ -75,7 +75,8 @@ githubevents.on('comment', function(comment) {
                     repo: comment.repo().origin.repo,
                     date: new Date(comment.published),
                     url: comment.linkByRel("alternate")[0].href,
-                    text: comment.content
+                    text: comment.content,
+                    gravatar: comment.gravatar
                 });
                 issue.add_event(E, worker);
             }
@@ -109,7 +110,8 @@ gitwatcher.on('commit', function(commit) {
                         url: 'https://github.com/' + commit.repo.user + '/' + commit.repo.name +
                         '/commit/' + commit.sha,
                         date: commit.date,
-                        text: commit.message
+                        text: commit.message,
+                        email: commit.email
                     });
                     issue.add_event(E, worker);
                 });

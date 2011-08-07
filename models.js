@@ -25,6 +25,8 @@ function defineModels(mongoose, fn, config) {
         type    : String,
         date    : { 'type': Date, 'index': 1 },
         text    : String,
+        email   : String,
+        gravatar: String,
     });
     mongoose.model("Event", Event);
 

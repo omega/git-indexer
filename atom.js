@@ -105,6 +105,14 @@ function AtomParser() {
             }
 
             parser.atomCurrentEntry.links.push(l);
+        } else if (node.name == 'media:thumbnail' && parser.atomCurrentEntry) {
+            var url = node.attributes["url"];
+            // Deconstruct!
+            // https://secure.gravatar.com/avatar/5b156caf4fc4789c87a11b2c7aff9082?s=30&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-140.png
+            var m = url.match(/avatar\/(.*)\?/)
+            if (m) {
+                parser.atomCurrentEntry.gravatar = m[1];
+            }
         } else {
             parser.atomCurrentNodeName = node.name;
         }
