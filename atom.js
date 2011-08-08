@@ -45,7 +45,7 @@ GitHubEvents.prototype.add_repo = function(repo) {
     }
 };
 GitHubEvents.prototype.mkreq = function(user, repo, page) {
-    if (!page) page = 0;
+    if (!page) page = 1;
     return {
         host: "api.github.com",
         port: 443,
