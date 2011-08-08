@@ -46,26 +46,30 @@ GitHubEvents.prototype.add_repo = function(repo) {
 };
 GitHubEvents.prototype.mkreq = function(user, repo, page) {
     if (!page) page = 1;
-    return {
+    var search = '?per_page=100&page=' + page;
+    var req = {
         host: "api.github.com",
         port: 443,
-        path: "/repos/" + user + "/" + repo + "/comments",
-        search: '?per_page=100&page=' + page,
+        path: "/repos/" + user + "/" + repo + "/comments" + search,
         headers: {
             "Authorization": this.auth,
             'Accept': 'application/vnd.github-commitcomment.html+json'
         }
     }
+    return req;
 };
 
-GitHubEvents.prototype.poll = function(repo) {
+GitHubEvents.prototype.poll = function(repo, page) {
     var self = this;
+    if (!page) page = 1;
+
     return commentchain.add(function(worker) {
         // Conveniance to fetch a remote feed and send it to parsing
-        logger.log("GitHubEvents".cyan + ": Polling comments on ", repo.safename);
+        logger.log("GitHubEvents".cyan + ": Polling comments on ",
+            repo.safename, "page: ", page);
 
-        https.get(self.mkreq(repo.user, repo.name), function(res) {
-            self.parse_headers(res.headers);
+        https.get(self.mkreq(repo.user, repo.name, page), function(res) {
+            self.parse_headers(repo, res.headers);
             if (res.statusCode == 200) {
                 var buf = "";
                 res.on("data", function(d) {
@@ -96,14 +100,25 @@ GitHubEvents.prototype.poll = function(repo) {
         }).on("error", function(err) {
             logger.error("fetching comments: ", err);
         });
-    }, "commits:" + repo.safename, function(err) {
+    }, "comments:" + repo.safename + ":" + page, function(err) {
     });
 };
 
-GitHubEvents.prototype.parse_headers = function(headers) {
+GitHubEvents.prototype.parse_headers = function(repo, headers) {
+    var self = this;
     if (headers.link) {
         if (!headers.link.match(/page=0/)) {
-            logger.warn("WE HAVE SOME LINK: ", headers.link);
+
+            var links = headers.link.split(",").map(function(e) {
+                var link_details = e.split(";");
+                var url = URL.parse(link_details[0], true);
+
+                if (link_details[1].match(/next/)) {
+                    logger.debug(link_details[1], url.query);
+                    self.poll(repo, url.query.page);
+                }
+                return {}
+            });
         }
     }
     if (parseInt(headers["x-ratelimit-remaining"]) < 100) {
