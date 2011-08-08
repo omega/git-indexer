@@ -39,7 +39,7 @@ WebServer.prototype.handle_log = function(r, resp) {
     resp.write("<body><ul>");
     logger.buffer.forEach(function(v) {
         resp.write("<li class='" + v.level + "'>" +
-            v.args.join(" ").replace("<", "&lt;").replace(">", "&gt;") +
+            v.args.join(" ").replace(/</g, "&lt;").replace(/>/g, "&gt;") +
             "</li>");
     });
     resp.write('</ul></body></html>');
