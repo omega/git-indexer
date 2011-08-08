@@ -119,7 +119,7 @@ function defineModels(mongoose, fn, config) {
             return this.clone(worker);
         }
         var repo = this;
-        logger.log("Pulling: ".blue + repo.safename);
+        logger.debug("Pulling: ".blue + repo.safename);
         // Should run git pull in the filepath
         exec("git fetch -q", {cwd: repo.filepath}, function(err,stdout, stderr) {
             if (err) {
