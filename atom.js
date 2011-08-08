@@ -3,10 +3,14 @@
 // NOTE: This is not really an ATOM parser. It parses the github private feed,
 // and generates events based on that.
 var sax = require('sax'),
+    logger = require("./logger")(),
     events = require("events"),
-    htmlparser = require('htmlparser'),
-    select = require('soupselect').select,
     util = require('util'),
+    https = require('https'),
+    URL = require('url'),
+    chaingang = require("chain-gang"),
+    commentchain = chaingang.create({ workers: 1}),
+
     GitHubEvents = function(config) {
         var self = this;
         events.EventEmitter.call(self);
@@ -16,13 +20,9 @@ var sax = require('sax'),
 
         self.repos = [];
 
-        console.log("GitHubEvents".cyan + " In initializer");
+        logger.log("GitHubEvents".cyan + " In initializer");
         self.VERSION = '0.1';
-    },
-    https = require('https'),
-    URL = require('url'),
-    chaingang = require("chain-gang"),
-    commentchain = chaingang.create({ workers: 1})
+    }
 ;
 module.exports = GitHubEvents;
 
@@ -38,7 +38,7 @@ GitHubEvents.prototype.add_repo = function(repo) {
     if (!this.repos.some(function(v) {
         return v.safename == repo.safename;
     })) {
-        console.log("unseen repo!" + repo.safename);
+        logger.debug("unseen repo!" + repo.safename);
         // New repo!
         this.repos.push(repo)
         this.poll(repo);
@@ -62,7 +62,7 @@ GitHubEvents.prototype.poll = function(repo) {
     var self = this;
     return commentchain.add(function(worker) {
         // Conveniance to fetch a remote feed and send it to parsing
-        console.log("GitHubEvents".cyan + ": Polling comments on ", repo.safename);
+        logger.log("GitHubEvents".cyan + ": Polling comments on ", repo.safename);
 
         https.get(self.mkreq(repo.user, repo.name), function(res) {
             self.parse_headers(res.headers);
@@ -91,10 +91,10 @@ GitHubEvents.prototype.poll = function(repo) {
                     }, 10 * 60 * 1000); // Wait for a while, then poll it again?
                 });
             } else {
-                console.log("ERROR:".red.bold + " fetching comments: ", res.statusCode);
+                logger.error("fetching comments: ", res.statusCode);
             }
         }).on("error", function(err) {
-            console.log("ERROR:".red + " error fetching comments: ", err);
+            logger.error("fetching comments: ", err);
         });
     }, "commits:" + repo.safename, function(err) {
     });
@@ -102,10 +102,10 @@ GitHubEvents.prototype.poll = function(repo) {
 
 GitHubEvents.prototype.parse_headers = function(headers) {
     if (headers.link) {
-        console.log("WARN:".yellow + " WE HAVE SOME LINK: ", headers.link);
+        logger.warn("WE HAVE SOME LINK: ", headers.link);
     }
     if (parseInt(headers["x-ratelimit-remaining"]) < 100) {
-        console.log("WARN:".yellow + " Low ratelimit remaining");
+        logger.warn("Low ratelimit remaining");
     }
 };
 

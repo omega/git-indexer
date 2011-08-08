@@ -1,5 +1,6 @@
 var Event, Issue, Repo;
 var events = require("events"),
+    logger = require("./logger")(),
     path = require("path"),
     exec = require("child_process").exec,
     colors = require('colors'),
@@ -49,7 +50,7 @@ function defineModels(mongoose, fn, config) {
             self.events.push(e);
             self.save(function(err, obj) {
                 if (err) {
-                    console.log("Error saving issue: ", err, self.key);
+                    logger.error("Saving issue: ", err, self.key);
                 }
                 worker.finish();
             });
@@ -82,14 +83,14 @@ function defineModels(mongoose, fn, config) {
         var repo = this;
         if (repo.cloned()) return; // No need to clone again
         // Should shell out and clone this repo to base and set this.filepath
-        console.log("Should clone the repo: " + repo.name + " into " + repo.filepath + " BASE:" + base);
+        logger.log("Should clone the repo: " + repo.name + " into " + repo.filepath + " BASE:" + base);
 
         exec("git clone " + repo.real_origin() + " " + repo.safename , { cwd: base },
             function(err, stdout, stderr) {
                 if (err || stderr) {
-                    console.log("ERR: ".red.bold + err + " : " + stderr);
+                    logger.error(err + " : " + stderr);
                 } else {
-                    console.log("INFO: ".blue + " Clone of " + repo.safename + " completed");
+                    logger.info("Clone of " + repo.safename + " completed");
                 }
                 worker.finish(err);
             });
@@ -114,15 +115,15 @@ function defineModels(mongoose, fn, config) {
     Repo.method("pull", function(worker) {
         if (!this.cloned()) {
             // Need to clone it!
-            console.log("Turning a pull into a clone on ".red + this.safename);
+            logger.log("Turning a pull into a clone on ".red + this.safename);
             return this.clone(worker);
         }
         var repo = this;
-        console.log("Pulling: ".blue + repo.safename);
+        logger.log("Pulling: ".blue + repo.safename);
         // Should run git pull in the filepath
         exec("git fetch -q", {cwd: repo.filepath}, function(err,stdout, stderr) {
             if (err) {
-                console.log("ERROR: (pull of " + repo.safename + ")" + err + " : " + stderr);
+                logger.error("(pull of " + repo.safename + ")" + err + " : " + stderr);
             }
             //if (err) throw err;
             //if (stderr) console.log("ERR: " + stderr);

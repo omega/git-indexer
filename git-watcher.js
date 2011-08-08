@@ -1,4 +1,5 @@
 var events = require('events'),
+    logger = require("./logger")(),
     chainGang = require("chain-gang"),
     colors = require('colors'),
     exec = require("child_process").exec,
@@ -50,7 +51,7 @@ GitWatcher.prototype.add_repo = function(repo) {
 };
 GitWatcher.prototype.scan = function(repo) {
     if (!repo.cloned()) {
-        console.log("Turning a scan into a clone on ".red + repo.safename);
+        logger.log("Turning a scan into a clone on ".red + repo.safename);
         return gitchain.add(function(worker) {
             repo.clone(worker);
         }, "clone:" + repo.safename);
@@ -74,14 +75,14 @@ GitWatcher.prototype.new_repo = function(repo) {
     gitchain.add(function(worker) {
         repo.clone(worker);
     }, "clone:" + repo.safename, function(err) {
-        console.log("Cloining " + repo.safename + " finished, adding to Watcher");
+        logger.log("Cloining " + repo.safename + " finished, adding to Watcher");
         self.add_repo(repo);
     });
 };
 
 GitWatcher.prototype.repull = function() {
     var self = this;
-    console.log(" GitWatcher".magenta.bold + ": repull  #repos: "
+    logger.log(" GitWatcher".magenta.bold + ": repull  #repos: "
             + this.repos.length.toString().bold.red);
 
     self.repos.forEach(function(repo) {
@@ -114,7 +115,7 @@ Walker.prototype.walk = function() {
     //console.log(" WALKER: ".blue + self.repo.safename);
     exec("git branch -r | grep -v '\\->'", {cwd: self.repo.filepath}, function(err, stdout, stderr) {
         if (err) {
-            console.log("ERROR:".red.bold + " git branch -r failed on " + self.repo.safename);
+            logger.error("git branch -r failed on " + self.repo.safename);
             return self.emit("end");
         }
         var branches = stdout.split(/\s+/g).filter(function(e) {
@@ -169,7 +170,7 @@ Walker.prototype.walk = function() {
 
         });
         walker.stderr.on("data", function(d) {
-            console.log("ERR: " + d);
+            logger.error(d.toString());
         });
     });
 };

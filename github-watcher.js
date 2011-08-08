@@ -1,4 +1,5 @@
 var events = require('events'),
+    logger = require("./logger")(),
     path = require("path"),
     models = require('./models'),
     mongoose = require("mongoose"),
@@ -23,7 +24,7 @@ var GitHubWatcher = function(config) {
     spore.createClientWithUrl(
             config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/organization.json',
             function(err, client) {
-                if (err) return console.log("ERROR: ".red.bold + " creating spore client failed: " + err);
+                if (err) return logger.error("creating spore client failed: " + err);
                 client.enable(github_auth);
                 client.enable(spore.middlewares.json());
                 self.github = client;
@@ -51,15 +52,16 @@ GitHubWatcher.prototype.poll = function() {
     if(!self.github) {
         // Try again in a little while
         setTimeout(function() { self.poll() }, 2000);
-        return console.log("WARN:".yellow + " spore client not ready");
+        return logger.warn("spore client not ready");
     }
-    console.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
+    logger.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
     this.github.get_organization_repositories(
             {format: 'json', org: this.org},
             function(err, resp) {
-                if (err) return console.log("ERROR: ".red + err);
-                if (typeof(resp.body.repositories) == "undefined") return console.log("ERROR:".red.bold + " No repositories found in response: ", resp);
-                console.log("  GitHub: ".cyan + resp.body.repositories.length);
+                if (err) return logger.error(err);
+                if (typeof(resp.body.repositories) == "undefined")
+                    return logger.error("No repositories found in response: ", resp);
+                logger.log("GitHub:".cyan, resp.body.repositories.length);
                 self.process_github_repos(resp.body.repositories);
             }
             );
@@ -75,16 +77,16 @@ GitHubWatcher.prototype.process_github_repos = function(repos) {
         //console.log(" - " + repo.name);
         Repo.findOne({'user': repo.owner, 'name': repo.name}, function(err, r) {
             if (err) {
-                console.log("ERROR".red.bold + " Fetching repo: " + err);
+                logger.error("Fetching repo: " + err);
             } else if (!r) {
-                console.log("INFO".blue + " New repo found: " + repo.name);
+                logger.info("New repo found: " + repo.name);
                 r = new Repo({
                     user: repo.owner,
                     name: repo.name
                 });
                 r.filepath = path.join(self.repo_base, r.safename);
                 r.save(function(err) {
-                    if (err) console.log("ERROR".red.bold + " inserting repo: " + err);
+                    if (err) logger.error("inserting repo: " + err);
                 });
                 self.emit("new-repo", r);
             } else {

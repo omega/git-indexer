@@ -3,6 +3,7 @@
 
 var config = require('confu')(__dirname, 'config.json');
 var
+    logger = require("./logger")(config.logging),
     chainGang = require("chain-gang"),
     commitchain = chainGang.create({workers: 1}),
     path = require("path"),
@@ -31,14 +32,14 @@ commitchain.on("finished", function(name) {
 */
 var mongo_connector = function(uris, mongoose, cb) {
     var error_handler = function(err) {
-        if (err) console.log("ERROR: ".red.bold, err);
+        if (err) logger.error(err);
         if (typeof(cb) != "undefined") cb(err);
     };
     if (uris.indexOf(",") != -1) {
-        console.log("connecting to a replicaSet: ", uris);
+        logger.log("connecting to a replicaSet: ", uris);
         return mongoose.connectSet(uris, error_handler);
     } else {
-        console.log("Connecting to a single mongo instance: ", uris);
+        logger.log("Connecting to a single mongo instance: ", uris);
         return mongoose.connect(uris, error_handler);
     }
 };
@@ -49,6 +50,8 @@ models.defineModels(mongoose, function() {
     db = mongo_connector(config.mongo, mongoose, function(err) {
         if (!err) {
             new WebServer(config, mongo_connector).start();
+        } else {
+            logger.error("Connecting to mongo failed: ", err);
         }
     });
     // XXX: Ugly to pass it here!
@@ -61,11 +64,11 @@ githubevents.on('comment', function(comment) {
     commitchain.add(function(worker) {
         Issue.findOne({'events.id': comment.commit_id }, function(err, issue) {
             if (err) {
-                console.error("ERROR: ", err);
+                logger.error(err);
                 worker.finish();
                 return;
             } else if (!issue) {
-                console.log("No issue found for comment", comment.commit_id, comment.repo.name);
+                logger.log("No issue found for comment", comment.commit_id, comment.repo.name);
                 worker.finish();
             } else {
                 var E = new Event({
@@ -94,7 +97,7 @@ gitwatcher.on('commit', function(commit) {
             commitchain.add(function(worker) {
                 Issue.findOne({key: bug}, function(err, issue) {
                     if (err) {
-                        console.log("ERROR: ", err);
+                        logger.error(err);
                         return;
                     } else if (!issue) {
                         //console.log("CREATING "  + bug);

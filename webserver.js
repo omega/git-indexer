@@ -1,4 +1,5 @@
 var models = require('./models.js'),
+    logger = require("./logger")(),
     http   = require('http'),
     mongoose = require('mongoose'),
     url = require('url'),
@@ -20,7 +21,7 @@ WebServer.prototype.start = function() {
     });
 
     http.createServer(function(req, resp) {
-        console.log("->WebServer: ".cyan + req.url);
+        logger.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
         resp.writeHead(200, {"Content-Type": "application/json"});
         if (!r.query.issue) {
@@ -30,7 +31,7 @@ WebServer.prototype.start = function() {
             return;
         }
         Issue.findOne({'key': r.query.issue}, function(err, issue) {
-            if (err) console.log("ERROR: ".red + err);
+            if (err) logger.error(err);
 
             if (issue) {
                 // Should re-sort the events
@@ -44,7 +45,7 @@ WebServer.prototype.start = function() {
             resp.end();
         });
     }).listen(self.port);
-    console.log("WebServer started, listening on http://localhost:" + this.port + "/");
+    logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
 };
 
 module.exports = WebServer;
