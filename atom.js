@@ -102,7 +102,9 @@ GitHubEvents.prototype.poll = function(repo) {
 
 GitHubEvents.prototype.parse_headers = function(headers) {
     if (headers.link) {
-        logger.warn("WE HAVE SOME LINK: ", headers.link);
+        if (!headers.link.match(/page=0/)) {
+            logger.warn("WE HAVE SOME LINK: ", headers.link);
+        }
     }
     if (parseInt(headers["x-ratelimit-remaining"]) < 100) {
         logger.warn("Low ratelimit remaining");
