@@ -52,7 +52,7 @@ GitHubWatcher.prototype.poll = function() {
     if(!self.github) {
         // Try again in a little while
         setTimeout(function() { self.poll() }, 2000);
-        return logger.warn("spore client not ready");
+        return logger.info("spore client not ready");
     }
     logger.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
     this.github.get_organization_repositories(
