@@ -37,7 +37,7 @@ var mongo_connector = function(uris, mongoose, cb) {
     };
     if (uris.indexOf(",") != -1) {
         logger.log("connecting to a replicaSet: ", uris);
-        return mongoose.connectSet(uris, error_handler);
+        return mongoose.connect(uris, error_handler);
     } else {
         logger.log("Connecting to a single mongo instance: ", uris);
         return mongoose.connect(uris, error_handler);
