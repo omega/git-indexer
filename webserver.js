@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+var config = require('confu')(__dirname, 'config.json');
 var models = require('./models.js'),
     logger = require("./logger")(),
     http   = require('http'),
@@ -7,12 +9,26 @@ var models = require('./models.js'),
     Issue, db
     ;
 
+
 var WebServer = function(config, connector) {
     this.port = config.web.port || 8091;
     this.mongo = config.mongo;
     this.connector = connector;
 };
 
+var mongo_connector = function(uris, mongoose, cb) {
+    var error_handler = function(err) {
+        if (err) logger.error(err);
+        if (typeof(cb) != "undefined") cb(err);
+    };
+    if (uris.indexOf(",") != -1) {
+        logger.log("connecting to a replicaSet: ", uris);
+        return mongoose.connectSet(uris, error_handler);
+    } else {
+        logger.log("Connecting to a single mongo instance: ", uris);
+        return mongoose.connect(uris, error_handler);
+    }
+};
 WebServer.prototype.start = function() {
     var self = this;
     models.defineModels(mongoose, function() {
@@ -71,4 +87,4 @@ WebServer.prototype.handle_issue = function(r, resp) {
 
 module.exports = WebServer;
 
-//new WebServer().start();
+new WebServer(config, mongo_connector).start();

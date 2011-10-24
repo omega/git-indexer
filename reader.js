@@ -15,7 +15,6 @@ var
     GitHubEvents = require('./atom'),
     GitHubWatcher = require('./github-watcher'),
     GitWatcher = require('./git-watcher'),
-    WebServer = require('./webserver'),
     colors = require('colors'),
     db, Issue, Commit, Repo, Comment
 ;
@@ -49,7 +48,8 @@ models.defineModels(mongoose, function() {
     Repo = mongoose.model("Repo");
     db = mongo_connector(config.mongo, mongoose, function(err) {
         if (!err) {
-            new WebServer(config, mongo_connector).start();
+            logger.info("Connected to mongo!");
+            //new WebServer(config, mongo_connector).start();
         } else {
             logger.error("Connecting to mongo failed: ", err);
         }
