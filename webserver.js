@@ -92,13 +92,13 @@ WebServer.prototype.handle_issue = function(r, resp) {
 
 WebServer.prototype.handle_repo_issues = function(r, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
-    if (!r.query.repo) {
+    if (!r.query.issues_for_repo) {
         // No issue specified, lets return empty
         resp.write(JSON.stringify({ 'error': 'No repo specified' }));
         resp.end();
         return;
     }
-    Issue.find({'repos': r.query.repo}, function(err, issues) {
+    Issue.find({'repos': r.query.issues_for_repo}, function(err, issues) {
         if (err) logger.error(err);
         var keys = [];
         issues.forEach(function(i) {
