@@ -33,11 +33,17 @@ function defineModels(mongoose, fn, config) {
 
     Issue   = new Schema({
         key     : {'type': String, 'unique': true},
-        events : [Event]
+        events : [Event],
+        repos : [String]
     });
     Issue.method("find_event", function(id) {
         return this.events.filter(function(e,i,a) {
             return (e.id == id);
+        })
+    });
+    Issue.method("find_repo", function(name) {
+        return this.repos.filter(function(r,name) {
+            return (r == name);
         })
     });
     // XXX: CODE SMELL FROM ANOTHER DIMENSION!
@@ -48,6 +54,9 @@ function defineModels(mongoose, fn, config) {
         if (self.find_event(e.id).length == 0) {
             //console.log("  Adding " + e.id);
             self.events.push(e);
+            if (self.find_repo(e.repo).length == 0) {
+                self.repos.push(e.repo);
+            }
             self.save(function(err, obj) {
                 if (err) {
                     logger.error("Saving issue: ", err, self.key);

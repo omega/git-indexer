@@ -42,7 +42,12 @@ WebServer.prototype.start = function() {
         if (r.pathname == '/log') {
             self.handle_log(r, resp);
         } else {
-            self.handle_issue(r, resp);
+            if (r.query.issue) {
+                self.handle_issue(r, resp);
+            }
+            else {
+                self.handle_repo_issues(r, resp);
+            }
         }
     }).listen(self.port);
     logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
@@ -81,6 +86,26 @@ WebServer.prototype.handle_issue = function(r, resp) {
             resp.write(JSON.stringify(issue));
         }
         if (!issue) resp.write(JSON.stringify({'error': "No issue found with that key"}));
+        resp.end();
+    });
+};
+
+WebServer.prototype.handle_repo_issues = function(r, resp) {
+    resp.writeHead(200, {"Content-Type": "application/json"});
+    if (!r.query.repo) {
+        // No issue specified, lets return empty
+        resp.write(JSON.stringify({ 'error': 'No repo specified' }));
+        resp.end();
+        return;
+    }
+    Issue.find({'repos': r.query.repo}, function(err, issues) {
+        if (err) logger.error(err);
+        var keys = [];
+        issues.forEach(function(i) {
+            keys.push(i.key);
+        });
+        keys.sort();
+        resp.write(JSON.stringify(keys));
         resp.end();
     });
 };
