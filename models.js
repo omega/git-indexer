@@ -42,8 +42,8 @@ function defineModels(mongoose, fn, config) {
         })
     });
     Issue.method("find_repo", function(name) {
-        return this.repos.filter(function(r,name) {
-            return (r == name);
+        return this.repos.filter(function(r) {
+            if (r == name) return r;
         })
     });
     // XXX: CODE SMELL FROM ANOTHER DIMENSION!
