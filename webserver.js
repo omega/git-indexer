@@ -39,9 +39,22 @@ WebServer.prototype.start = function() {
     http.createServer(function(req, resp) {
         logger.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
+        if (r.pathname === '/favicon.ico') {
+            resp.writeHead(200, {'Content-Type': 'image/x-icon'} );
+            resp.end();
+            console.log('favicon requested');
+            return;
+        }
         var path = r.path_as_array;
         var handler = self['handle_' + path[0]];
-        if (handler) handler(path[1], resp);
+        if (handler) {
+            handler(path[1], resp);
+        }
+        else {
+            resp.writeHead(404, {"Content-Type": "text/plain;charset=utf-8"});
+            resp.write('No such page');
+            resp.end();
+        }
     }).listen(self.port);
     logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
 };
