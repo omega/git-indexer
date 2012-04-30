@@ -40,16 +40,8 @@ WebServer.prototype.start = function() {
         logger.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
         var path = r.path_as_array;
-        if (path[0] == 'log') {
-            self.handle_log(r, resp);
-        } else {
-            if (path[0] == 'issue') {
-                self.handle_issue(path[1], resp);
-            }
-            else {
-                self.handle_repo_issues(path[1], resp);
-            }
-        }
+        var handler = self['handle_' + path[0]];
+        if (handler) handler(path[1], resp);
     }).listen(self.port);
     logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
 };
@@ -67,6 +59,7 @@ WebServer.prototype.handle_log = function(r, resp) {
     resp.write('</ul></body></html>');
     resp.end();
 };
+
 WebServer.prototype.handle_issue = function(issue, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
     if (!issue) {
@@ -91,10 +84,10 @@ WebServer.prototype.handle_issue = function(issue, resp) {
     });
 };
 
-WebServer.prototype.handle_repo_issues = function(repo, resp) {
+WebServer.prototype.handle_issues_for_repo = function(repo, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
     if (!repo) {
-        // No issue specified, lets return empty
+        // No repo specified, lets return empty
         resp.write(JSON.stringify({ 'error': 'No repo specified' }));
         resp.end();
         return;
