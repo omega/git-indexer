@@ -4,7 +4,7 @@ var models = require('./models.js'),
     logger = require("./logger")(),
     http   = require('http'),
     mongoose = require('mongoose'),
-    url = require('url'),
+    url = require('./url.js'),
     colors = require('colors'),
     Issue, db
     ;
@@ -39,14 +39,15 @@ WebServer.prototype.start = function() {
     http.createServer(function(req, resp) {
         logger.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
-        if (r.pathname == '/log') {
+        var path = r.path_as_array;
+        if (path[0] == 'log') {
             self.handle_log(r, resp);
         } else {
-            if (r.query.issue) {
-                self.handle_issue(r, resp);
+            if (path[0] == 'issue') {
+                self.handle_issue(path[1], resp);
             }
             else {
-                self.handle_repo_issues(r, resp);
+                self.handle_repo_issues(path[1], resp);
             }
         }
     }).listen(self.port);
@@ -66,15 +67,15 @@ WebServer.prototype.handle_log = function(r, resp) {
     resp.write('</ul></body></html>');
     resp.end();
 };
-WebServer.prototype.handle_issue = function(r, resp) {
+WebServer.prototype.handle_issue = function(issue, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
-    if (!r.query.issue) {
+    if (!issue) {
         // No issue specified, lets return empty
         resp.write(JSON.stringify({ 'error': 'No issue specified' }));
         resp.end();
         return;
     }
-    Issue.findOne({'key': r.query.issue}, function(err, issue) {
+    Issue.findOne({'key': issue}, function(err, issue) {
         if (err) logger.error(err);
 
         if (issue) {
@@ -90,15 +91,15 @@ WebServer.prototype.handle_issue = function(r, resp) {
     });
 };
 
-WebServer.prototype.handle_repo_issues = function(r, resp) {
+WebServer.prototype.handle_repo_issues = function(repo, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
-    if (!r.query.issues_for_repo) {
+    if (!repo) {
         // No issue specified, lets return empty
         resp.write(JSON.stringify({ 'error': 'No repo specified' }));
         resp.end();
         return;
     }
-    Issue.find({'repos': r.query.issues_for_repo}, function(err, issues) {
+    Issue.find({'repos': repo}, function(err, issues) {
         if (err) logger.error(err);
         var keys = [];
         issues.forEach(function(i) {
