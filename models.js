@@ -37,35 +37,44 @@ function defineModels(mongoose, fn, config) {
         repos : [String]
     });
     Issue.method("find_event", function(id) {
-        return this.events.filter(function(e,i,a) {
+        return this.events.filter(function(e) {
             return (e.id == id);
         })
     });
+    Issue.method("has_event", function(id) {
+        return this.find_event(id).length > 0;
+    });
+
     Issue.method("find_repo", function(name) {
         return this.repos.filter(function(r) {
             if (r == name) return r;
         })
     });
-    // XXX: CODE SMELL FROM ANOTHER DIMENSION!
+
+    Issue.method("has_repo", function(id) {
+        return this.find_repo(id).length > 0;
+    });
+
+    Issue.method("add_repo_for_event", function(e) {
+        if (!this.has_repo(e.repo)) this.repos.push(e.repo);
+    });
+
     Issue.method("add_event", function(e, worker) {
         var self = this;
         // Check to avoid dupes
-        //console.log("in add_event: " + e.id + " " + this.find_event(e.id));
-        if (self.find_event(e.id).length == 0) {
+        //console.log("in add_event: " + e.id + " " + this.has_event(e.id));
+        if (self.has_event(e.id)) worker.finish(); // nothing to do
+        else {
             //console.log("  Adding " + e.id);
             self.events.push(e);
-            if (self.find_repo(e.repo).length == 0) {
-                self.repos.push(e.repo);
-            }
+            self.add_repo_for_event(e);
             self.save(function(err, obj) {
                 if (err) {
                     logger.error("Saving issue: ", err, self.key);
                 }
                 worker.finish();
             });
-        } else {
-            worker.finish(); // nothing to do here
-        }
+        } 
     });
 
     mongoose.model("Issue", Issue);
