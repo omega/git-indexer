@@ -107,12 +107,7 @@ WebServer.prototype.handle_issues_for_repo = function(repo, resp) {
     }
     Issue.find({'repos': repo}, function(err, issues) {
         if (err) logger.error(err);
-        var keys = [];
-        issues.forEach(function(i) {
-            keys.push(i.key);
-        });
-        keys.sort();
-        resp.write(JSON.stringify(keys));
+        resp.write(JSON.stringify(issues));
         resp.end();
     });
 };
