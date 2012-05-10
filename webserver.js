@@ -73,6 +73,13 @@ WebServer.prototype.handle_log = function(r, resp) {
     resp.end();
 };
 
+WebServer.prototype.handle_repos = function(dummy, resp) {
+    resp.writeHead(200, {"Content-Type": "application/json"});
+    console.log(config.repos);
+    resp.write(JSON.stringify(config.repos.inc));
+    resp.end();
+};
+
 WebServer.prototype.handle_issue = function(issue, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
     if (!issue) {
