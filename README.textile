@@ -7,6 +7,17 @@ for comments on those commits, storing it all on the correct issue in a mongodb
 There is a second half of this, that is a jira plugin to display this as an issue
 panel, but that is not quite ready for prime time, but it is comming
 
+h1. installation
+
+# Install mongodb
+# Install node.js
+# Use npm to install required node modules:
+<code>
+npm chain-gang colors  confu  mongoose  spore
+</code>
+# Create a data directory in the root directory
+
+
 h1. config
 
 We look for a config.json alongside the app, containing the following:
