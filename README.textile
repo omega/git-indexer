@@ -13,7 +13,7 @@ h1. installation
 # Install node.js
 # Use npm to install required node modules:
 <code>
-npm chain-gang colors  confu  mongoose  spore
+npm install chain-gang colors  confu  mongoose  spore
 </code>
 # Create a data directory in the root directory
 
