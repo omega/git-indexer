@@ -32,14 +32,21 @@ We look for a config.json alongside the app, containing the following:
         "repo_base": "data/" // Where to store the cloned repos
     },
     "github_auth": {
-        "user": github user name
-        "pw"  : github password
+        "user": myname // github user name
+        "pw"  : topsecret // github password
     },
     "git_auth": {  // pointless duplication
-        "user": github user name
-        "pw"  : github password
+        "user": myname // github user name
+        "pw"  : topsecret // github password
     },
     "mongo": "mongodb://localhost/jira" // The mongodb to connect to
+    "repos": {
+        "inc": [
+            "my-good-repo",
+            "my-other-repo",
+            "some-weird-code",
+            ]
+    },
 }
 </code></pre>
 
