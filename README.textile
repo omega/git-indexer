@@ -7,13 +7,24 @@ for comments on those commits, storing it all on the correct issue in a mongodb
 There is a second half of this, that is a jira plugin to display this as an issue
 panel, but that is not quite ready for prime time, but it is comming
 
+h1. installation
+
+# Install mongodb
+# Install node.js
+# Use npm to install required node modules:
+<code>
+npm install chain-gang colors  confu  mongoose  spore
+</code>
+# Create a data directory in the root directory
+
+
 h1. config
 
 We look for a config.json alongside the app, containing the following:
 
 <pre><code>
 {
-    "org": "", // Your organization, we don't support single users atm
+    "org": "my_organization", // Your organization, we don't support single users atm
     "web": {
         "port": 8091 // Port you want the web server to listen to
     },
@@ -21,16 +32,33 @@ We look for a config.json alongside the app, containing the following:
         "repo_base": "data/" // Where to store the cloned repos
     },
     "github_auth": {
-        "user": "USERNAME/token", // username, with /token
-        "pw"  : "A__TOKEN__HERE" // Your github token
+        "user": myname // github user name
+        "pw"  : topsecret // github password
     },
-    "feed": "https://github.com/organizations/ORGANIZATION/USERNAME.private.atom?token=A__TOKEN__HERE", // This could probably be constructed from other info in this file, but I am lazy
+    "git_auth": {  // pointless duplication
+        "user": myname // github user name
+        "pw"  : topsecret // github password
+    },
     "mongo": "mongodb://localhost/jira" // The mongodb to connect to
+    "repos": {
+        "inc": [
+            "my-good-repo",
+            "my-other-repo",
+            "some-weird-code",
+            ]
+    },
 }
 </code></pre>
 
 h1. what is what?
 
-You start up @reader.js@ to get it all running. It will clone and index all your repos for you
+You run @node reader.js@ to get it all running. It will clone and index all your repos for you.
+@node webserver.js@ starts the web server.
+
+It serves the following URLs:
+@http://localhost:8091/repos@ List of repos defined in the config file
+@http://localhost:8091/issue/XXX-111@ Commits tagged with issue XXX-111
+@http://localhost:8091/issues_for_repo/my-repo@ Issues tagged in commits to repo my-repo
+
 
 
