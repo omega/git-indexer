@@ -1,7 +1,7 @@
 url = require('url');
 
-exports.parse = function(string) {
-    var u = url.parse(string);
+exports.parse = function(string,parse_query_string) {
+    var u = url.parse(string,parse_query_string);
     if (u.pathname == '/') {
         u.path_as_array = [];
     }

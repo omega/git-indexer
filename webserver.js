@@ -50,6 +50,9 @@ WebServer.prototype.start = function() {
         if (handler) {
             handler(path[1], resp);
         }
+        else if (r.query.issue) {
+            self.handle_issue(r.query.issue, resp);
+        }
         else {
             resp.writeHead(404, {"Content-Type": "text/plain;charset=utf-8"});
             resp.write('No such page');
