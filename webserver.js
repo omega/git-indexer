@@ -4,7 +4,7 @@ var models = require('./models.js'),
     logger = require("./logger")(),
     http   = require('http'),
     mongoose = require('mongoose'),
-    url = require('url'),
+    url = require('./url.js'),
     colors = require('colors'),
     Issue, db
     ;
@@ -39,10 +39,24 @@ WebServer.prototype.start = function() {
     http.createServer(function(req, resp) {
         logger.log("->WebServer: ".cyan + req.url);
         var r = url.parse(req.url, true);
-        if (r.pathname == '/log') {
-            self.handle_log(r, resp);
-        } else {
-            self.handle_issue(r, resp);
+        if (r.pathname === '/favicon.ico') {
+            resp.writeHead(200, {'Content-Type': 'image/x-icon'} );
+            resp.end();
+            console.log('favicon requested');
+            return;
+        }
+        var path = r.path_as_array;
+        var handler = self['handle_' + path[0]];
+        if (handler) {
+            handler(path[1], resp);
+        }
+        else if (r.query.issue) {
+            self.handle_issue(r.query.issue, resp);
+        }
+        else {
+            resp.writeHead(404, {"Content-Type": "text/plain;charset=utf-8"});
+            resp.write('No such page');
+            resp.end();
         }
     }).listen(self.port);
     logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
@@ -61,15 +75,23 @@ WebServer.prototype.handle_log = function(r, resp) {
     resp.write('</ul></body></html>');
     resp.end();
 };
-WebServer.prototype.handle_issue = function(r, resp) {
+
+WebServer.prototype.handle_repos = function(dummy, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
-    if (!r.query.issue) {
+    console.log(config.repos);
+    resp.write(JSON.stringify(config.repos.inc));
+    resp.end();
+};
+
+WebServer.prototype.handle_issue = function(issue, resp) {
+    resp.writeHead(200, {"Content-Type": "application/json"});
+    if (!issue) {
         // No issue specified, lets return empty
         resp.write(JSON.stringify({ 'error': 'No issue specified' }));
         resp.end();
         return;
     }
-    Issue.findOne({'key': r.query.issue}, function(err, issue) {
+    Issue.findOne({'key': issue}, function(err, issue) {
         if (err) logger.error(err);
 
         if (issue) {
@@ -81,6 +103,21 @@ WebServer.prototype.handle_issue = function(r, resp) {
             resp.write(JSON.stringify(issue));
         }
         if (!issue) resp.write(JSON.stringify({'error': "No issue found with that key"}));
+        resp.end();
+    });
+};
+
+WebServer.prototype.handle_issues_for_repo = function(repo, resp) {
+    resp.writeHead(200, {"Content-Type": "application/json"});
+    if (!repo) {
+        // No repo specified, lets return empty
+        resp.write(JSON.stringify({ 'error': 'No repo specified' }));
+        resp.end();
+        return;
+    }
+    Issue.find({'repos': repo}, function(err, issues) {
+        if (err) logger.error(err);
+        resp.write(JSON.stringify(issues));
         resp.end();
     });
 };
