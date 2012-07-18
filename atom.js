@@ -98,7 +98,7 @@ GitHubEvents.prototype.poll = function(repo, page) {
                 logger.error("fetching comments: ", res.statusCode);
             }
         }).on("error", function(err) {
-            logger.error("fetching comments: ", err);
+            logger.error("fetching comments: ", err, repo.safename);
         });
     }, "comments:" + repo.safename + ":" + page, function(err) {
     });
