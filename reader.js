@@ -78,7 +78,8 @@ githubevents.on('comment', function(comment) {
                     date: new Date(comment.created_at),
                     url: comment.url,
                     text: comment.body_html,
-                    gravatar: comment.gravatar
+                    gravatar: comment.gravatar,
+                    github_login: comment.user.login
                 });
                 issue.add_event(E, worker);
             }
