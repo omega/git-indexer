@@ -22,7 +22,7 @@ var GitHubWatcher = function(config) {
             );
 
     spore.createClientWithUrl(
-            config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/organization.json',
+            config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/org3.json',
             function(err, client) {
                 if (err) return logger.error("creating spore client failed: " + err);
                 client.enable(github_auth);
@@ -55,14 +55,14 @@ GitHubWatcher.prototype.poll = function() {
         return logger.info("spore client not ready");
     }
     logger.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
-    this.github.get_organization_repositories(
+    this.github.list_org_repos(
             {format: 'json', org: this.org},
             function(err, resp) {
                 if (err) return logger.error(err);
-                if (typeof(resp.body.repositories) == "undefined")
+                if (typeof(resp.body) == "undefined")
                     return logger.error("No repositories found in response: ", resp);
-                logger.log("GitHub:".cyan, resp.body.repositories.length);
-                self.process_github_repos(resp.body.repositories);
+                logger.log("GitHub:".cyan, resp.body.length);
+                self.process_github_repos(resp.body);
             }
             );
 };
@@ -74,14 +74,14 @@ GitHubWatcher.prototype.process_github_repos = function(repos) {
         //console.log("GIT_LIMIT: ", GIT_LIMIT);
         if (GIT_LIMIT < 1) return;
         GIT_LIMIT--;
-        //console.log(" - " + repo.name);
-        Repo.findOne({'user': repo.owner, 'name': repo.name}, function(err, r) {
+        //logger.debug("Looking for", repo.owner.login, repo.name);
+        Repo.findOne({'user': repo.owner.login, 'name': repo.name}, function(err, r) {
             if (err) {
                 logger.error("Fetching repo: " + err);
             } else if (!r) {
                 logger.info("New repo found: " + repo.name);
                 r = new Repo({
-                    user: repo.owner,
+                    user: repo.owner.login,
                     name: repo.name
                 });
                 r.filepath = path.join(self.repo_base, r.safename);
