@@ -47,8 +47,19 @@ We look for a config.json alongside the app, containing the following:
             "some-weird-code",
             ]
     },
+    "git_map_url": "http://mapper/?username=$",
+    "github_map_url": "http://mapper/?username=$",
 }
 </code></pre>
+
+h3. git_map_url & github_map_url
+
+This is a link to a webservice which given a git email or github username, will return a json like this:
+
+   { username: "some-other-username" }
+
+This will be stored in events, as "remoteuser". We use this to map to JIRA
+users, but you can use it for anything you want really.
 
 h1. what is what?
 

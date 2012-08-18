@@ -16,6 +16,7 @@ var
     GitHubWatcher = require('./github-watcher'),
     GitWatcher = require('./git-watcher'),
     colors = require('colors'),
+    UserMapper = require('./user-mapper.js'),
     db, Issue, Commit, Repo, Comment
 ;
 /*
@@ -42,6 +43,10 @@ var mongo_connector = function(uris, mongoose, cb) {
         return mongoose.connect(uris, error_handler);
     }
 };
+var gitusermapper = new UserMapper(config.git_map_url);
+var githubusermapper = new UserMapper(config.github_map_url);
+
+
 models.defineModels(mongoose, function() {
     Issue = mongoose.model("Issue");
     Event = mongoose.model("Event");
@@ -71,17 +76,20 @@ githubevents.on('comment', function(comment) {
                 logger.log("No issue found for comment", comment.commit_id, comment.repo.name);
                 worker.finish();
             } else {
-                var E = new Event({
-                    id: "comment:" + comment.id,
-                    user: comment.repo.user,
-                    repo: comment.repo.name,
-                    date: new Date(comment.created_at),
-                    url: comment.url,
-                    text: comment.body_html,
-                    gravatar: comment.gravatar,
-                    github_login: comment.user.login
+                githubusermapper.map(comment.user.login, function(json) {
+                    var E = new Event({
+                        id: "comment:" + comment.id,
+                        user: comment.repo.user,
+                        repo: comment.repo.name,
+                        date: new Date(comment.created_at),
+                        url: comment.url,
+                        text: comment.body_html,
+                        gravatar: comment.gravatar,
+                        github_login: comment.user.login,
+                        remoteuser: json.username
+                    });
+                    issue.add_event(E, worker);
                 });
-                issue.add_event(E, worker);
             }
         });
     }, "save:" + comment.id);
@@ -106,17 +114,20 @@ gitwatcher.on('commit', function(commit) {
                     } else {
                         //console.log("Found old issue ", bug);
                     }
-                    var E = new Event({
-                        id: commit.sha,
-                        user: commit.repo.user,
-                        repo: commit.repo.name,
-                        url: 'https://github.com/' + commit.repo.user + '/' + commit.repo.name +
-                        '/commit/' + commit.sha,
-                        date: commit.date,
-                        text: commit.message,
-                        email: commit.email
+                    gitusermapper.map(commit.email, function(json) {
+                        var E = new Event({
+                            id: commit.sha,
+                            user: commit.repo.user,
+                            repo: commit.repo.name,
+                            url: 'https://github.com/' + commit.repo.user + '/' + commit.repo.name +
+                            '/commit/' + commit.sha,
+                            date: commit.date,
+                            text: commit.message,
+                            email: commit.email,
+                            remoteuser: json.username
+                        });
+                        issue.add_event(E, worker);
                     });
-                    issue.add_event(E, worker);
                 });
             }, "save:" + bug + ":" + commit.sha);
         });

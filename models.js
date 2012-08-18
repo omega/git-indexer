@@ -28,6 +28,7 @@ function defineModels(mongoose, fn, config) {
         text    : String,
         email   : String,
         gravatar: String,
+        remoteuser: String,
     });
     mongoose.model("Event", Event);
 
