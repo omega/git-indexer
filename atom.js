@@ -20,8 +20,9 @@ var sax = require('sax'),
 
         self.repos = [];
 
-        logger.log("GitHubEvents".cyan + " In initializer");
         self.VERSION = '0.1';
+        self.disabled = !!( config.enabled.comments || true);
+        logger.log("GitHubEvents".cyan + ": " + (self.disabled ? "Disabled in config" : "Enabled"));
     }
 ;
 module.exports = GitHubEvents;
@@ -35,6 +36,7 @@ GitHubEvents.prototype = Object.create(events.EventEmitter.prototype, {
 });
 GitHubEvents.prototype.add_repo = function(repo) {
     // Add watching for comments on this repo.
+    if (this.disabled) return;
     if (!this.repos.some(function(v) {
         return v.safename == repo.safename;
     })) {
@@ -45,6 +47,7 @@ GitHubEvents.prototype.add_repo = function(repo) {
     }
 };
 GitHubEvents.prototype.mkreq = function(user, repo, page) {
+    if (this.disabled) return;
     if (!page) page = 1;
     var search = '?per_page=100&page=' + page;
     var req = {
@@ -60,6 +63,7 @@ GitHubEvents.prototype.mkreq = function(user, repo, page) {
 };
 
 GitHubEvents.prototype.poll = function(repo, page) {
+    if (this.disabled) return;
     var self = this;
     if (!page) page = 1;
 
@@ -105,6 +109,7 @@ GitHubEvents.prototype.poll = function(repo, page) {
 };
 
 GitHubEvents.prototype.parse_headers = function(repo, headers) {
+    if (this.disabled) return;
     var self = this;
     if (headers.link) {
         if (!headers.link.match(/page=0/)) {
