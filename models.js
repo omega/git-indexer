@@ -75,7 +75,7 @@ function defineModels(mongoose, fn, config) {
                 }
                 worker.finish();
             });
-        } 
+        }
     });
 
     mongoose.model("Issue", Issue);
