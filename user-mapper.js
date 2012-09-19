@@ -1,23 +1,35 @@
 
+var config = require('confu')(__dirname, 'config.json');
 var http = require('http'),
-    fs   = require('fs')
+    fs   = require('fs'),
+    logger = require("./logger")(config.logging)
 ;
 
 var UserMapper = function(url) {
     this.url = url;
+    this.cache = {};
 };
 
 module.exports = UserMapper;
 
 UserMapper.prototype.map = function(email, cb, err_cb) {
-    if (!this.url) {
+    var self = this;
+    if (!self.url) {
         return cb({username: email});
 
+    }
+    if (self.cache[email]) {
+        logger.debug("Returning cached username for email: " + email);
+        return cb({username: self.cache[email].username});
     }
     var url = this.url.replace(/\$/, email);
     // Fetch the url..
     var wrapped_cb = function(data) {
         var json = JSON.parse(data);
+        logger.debug("Setting cache for email: " + email);
+        self.cache[email] = {
+            username: json.username
+        };
         cb(json);
     };
     var fetcher = this.fetch(url, wrapped_cb, err_cb);
