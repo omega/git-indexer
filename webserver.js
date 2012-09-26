@@ -6,35 +6,23 @@ var models = require('./models.js'),
     mongoose = require('mongoose'),
     url = require('./url.js'),
     colors = require('colors'),
-    Issue, db
+    Issue
     ;
 
+models.defineModels();
+mongoose.connection.on('error', function(err) {
+    console.error("MongoDB error: ", err);
+});
+var db = mongoose.createConnection(config.mongo);
+db.on('error', console.error.bind(console, "connection error:"));
 
-var WebServer = function(config, connector) {
+
+var WebServer = function(config) {
     this.port = config.web.port || 8091;
-    this.mongo = config.mongo;
-    this.connector = connector;
 };
 
-var mongo_connector = function(uris, mongoose, cb) {
-    var error_handler = function(err) {
-        if (err) logger.error(err);
-        if (typeof(cb) != "undefined") cb(err);
-    };
-    if (uris.indexOf(",") != -1) {
-        logger.log("connecting to a replicaSet: ", uris);
-        return mongoose.connectSet(uris, error_handler);
-    } else {
-        logger.log("Connecting to a single mongo instance: ", uris);
-        return mongoose.connect(uris, error_handler);
-    }
-};
 WebServer.prototype.start = function() {
     var self = this;
-    models.defineModels(mongoose, function() {
-        Issue = mongoose.model("Issue");
-        db = self.connector(self.mongo, mongoose);
-    });
 
     http.createServer(function(req, resp) {
         logger.log("->WebServer: ".cyan + req.url);
@@ -42,7 +30,7 @@ WebServer.prototype.start = function() {
         if (r.pathname === '/favicon.ico') {
             resp.writeHead(200, {'Content-Type': 'image/x-icon'} );
             resp.end();
-            console.log('favicon requested');
+            //console.log('favicon requested');
             return;
         }
         var path = r.path_as_array;
@@ -78,7 +66,6 @@ WebServer.prototype.handle_log = function(r, resp) {
 
 WebServer.prototype.handle_repos = function(dummy, resp) {
     resp.writeHead(200, {"Content-Type": "application/json"});
-    console.log(config.repos);
     resp.write(JSON.stringify(config.repos.inc));
     resp.end();
 };
@@ -91,7 +78,7 @@ WebServer.prototype.handle_issue = function(issue, resp) {
         resp.end();
         return;
     }
-    Issue.findOne({'key': issue}, function(err, issue) {
+    Issue.findOne({'key': issue}).exec(function(err, issue) {
         if (err) logger.error(err);
 
         if (issue) {
@@ -124,4 +111,9 @@ WebServer.prototype.handle_issues_for_repo = function(repo, resp) {
 
 module.exports = WebServer;
 
-new WebServer(config, mongo_connector).start();
+var WS = new WebServer(config);
+db.once('open', function() {
+    logger.info("we are connected to mongodb, starting WS");
+    Issue = db.model('Issue');
+    WS.start();
+});

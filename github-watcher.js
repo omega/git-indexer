@@ -1,17 +1,11 @@
 var events = require('events'),
     logger = require("./logger")(),
     path = require("path"),
-    models = require('./models'),
-    mongoose = require("mongoose"),
-    spore = require('spore'),
-    db, Repo
+    spore = require('spore')
 ;
-
-models.defineModels(mongoose, function() {
-    Repo = mongoose.model("Repo");
-});
-var GitHubWatcher = function(config) {
+var GitHubWatcher = function(config, repo) {
     var self = this;
+    Repo = repo;
     events.EventEmitter.call(self);
     self.repos = [];
     self.org = config.org;
@@ -46,7 +40,6 @@ GitHubWatcher.prototype = Object.create(events.EventEmitter.prototype, {
                      enumerable: false
                  }
 });
-
 GitHubWatcher.prototype.poll = function() {
     var self = this;
     if(!self.github) {

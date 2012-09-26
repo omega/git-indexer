@@ -30,37 +30,23 @@ commitchain.on("finished", function(name) {
     console.log("-ISSCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
 });
 */
-var mongo_connector = function(uris, mongoose, cb) {
-    var error_handler = function(err) {
-        if (err) logger.error(err);
-        if (typeof(cb) != "undefined") cb(err);
-    };
-    if (uris.indexOf(",") != -1) {
-        logger.log("connecting to a replicaSet: ", uris);
-        return mongoose.connectSet(uris, error_handler);
-    } else {
-        logger.log("Connecting to a single mongo instance: ", uris);
-        return mongoose.connect(uris, error_handler);
-    }
-};
 var gitusermapper = new UserMapper(config.git_map_url);
 var githubusermapper = new UserMapper(config.github_map_url);
 
-
-models.defineModels(mongoose, function() {
-    Issue = mongoose.model("Issue");
-    Event = mongoose.model("Event");
-    Repo = mongoose.model("Repo");
-    db = mongo_connector(config.mongo, mongoose, function(err) {
-        if (!err) {
-            logger.info("Connected to mongo!");
-            //new WebServer(config, mongo_connector).start();
-        } else {
-            logger.error("Connecting to mongo failed: ", err);
-        }
-    });
-    // XXX: Ugly to pass it here!
-}, config);
+models.defineModels();
+var db = mongoose.createConnection(config.mongo);
+db.on('error', function(err) { logger.error("Error connection to mongodb: ", err); });
+db.once('open', function() {
+    // This is when we start the app then..
+    Issue = db.model('Issue');
+    Event = db.model('Event');
+    Repo = db.model('Repo');
+    timers.feedreader = setTimeout(function() {
+        githubwatcher.poll();
+    }, 1);
+    timers.repo_fetcher = setInterval(function() {
+        githubwatcher.poll();
+    }, 60 * 1000);
 
 
 var githubevents = new GitHubEvents(config);
@@ -134,7 +120,7 @@ gitwatcher.on('commit', function(commit) {
     }
 });
 
-var githubwatcher = new GitHubWatcher(config);
+var githubwatcher = new GitHubWatcher(config, Repo);
 githubwatcher.on('new-repo', function(repo) {
     if (!is_included(repo.name)) return;
     //console.log("  new-repo emitted", repo);
@@ -164,31 +150,9 @@ function is_included(reponame) {
     return true; // Default to not filtered
 }
 
-//var ws = new WebServer();
-//ws.start();
 
+});
 
-
-// XXX: Timers needed:
-//  - check for new repos on github
-//  - Re-scan repos
-//  -- Make sure we hide from last commit or something?
-
-/******
- *
- * GITHUB TIMER
- *
- */
-
-//timers.github = setTimeout(update_github_repos, 1000);
-//timers.pull = setTimeout(repull_repos, 3000);
-
-timers.feedreader = setTimeout(function() {
-    githubwatcher.poll();
-}, 1);
-timers.repo_fetcher = setInterval(function() {
-    githubwatcher.poll();
-}, 60 * 1000);
 /*
 var memory = process.memoryUsage();
 var max = memory;

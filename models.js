@@ -1,17 +1,19 @@
 var Event, Issue, Repo;
+var config = require('confu')(__dirname, 'config.json');
 var events = require("events"),
     logger = require("./logger")(),
     path = require("path"),
     exec = require("child_process").exec,
     colors = require('colors'),
-    spawn = require("child_process").spawn
+    spawn = require("child_process").spawn,
+    mongoose = require('mongoose')
     ;
 var base;
 var git_auth;
 
-function defineModels(mongoose, fn, config) {
+function defineModels() {
     if (config) {
-        if (config.paths.repo_base) base = config.paths.repo_base;
+        if (config.paths && config.paths.repo_base) base = config.paths.repo_base;
         if (config.git_auth) git_auth = config.git_auth;
     }
 
@@ -151,9 +153,6 @@ function defineModels(mongoose, fn, config) {
     });
 
     mongoose.model("Repo", Repo);
-
-
-    fn();
 }
 
 exports.defineModels = defineModels;

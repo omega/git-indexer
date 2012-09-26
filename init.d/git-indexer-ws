@@ -62,7 +62,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/bin # modify if you need
 DAEMON_ARGS="/path/to/app.js"               # path to your node.js server/app
                                             # NB: don't use ~/ in path
 
-DESC="node.js http server"                  # whatever fancy description you like
+DESC="git-indexer web service server"                  # whatever fancy description you like
 
 NODEUSER=myuser:mygroup                     # USER who OWNS the daemon process (no matter whoever runs the init script)
                                             # user:group (if no group is specified, the primary GID for that user is used)
