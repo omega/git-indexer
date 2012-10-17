@@ -15,12 +15,24 @@ var GitHubWatcher = function(config, repo) {
             config.github_auth.user, config.github_auth.pw
             );
 
+    /*
+    var github_pager = function(method, request, next) {
+        next(function(response, next) {
+            console.log("IN RESPONSE MIDDLEWARE");
+            console.log(response.headers);
+
+            next();
+        });
+    };
+    */
+
     spore.createClientWithUrl(
             config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/org3.json',
             function(err, client) {
                 if (err) return logger.error("creating spore client failed: " + err);
                 client.enable(github_auth);
                 client.enable(spore.middlewares.json());
+                //client.enable(github_pager);
                 self.github = client;
             }
             );
@@ -59,7 +71,7 @@ GitHubWatcher.prototype.poll = function() {
             }
             );
 };
-var GIT_LIMIT = 200;
+var GIT_LIMIT = 300;
 GitHubWatcher.prototype.process_github_repos = function(repos) {
     var self = this;
     repos.forEach(function(repo) {
