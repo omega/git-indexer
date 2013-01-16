@@ -1,38 +1,43 @@
 var events = require('events'),
-    logger = require("./logger")(),
+    logger = require("./logger"),
     path = require("path"),
-    spore = require('spore')
+    spore = require('spore'),
+    lp = require("./link-parser")
 ;
-var GitHubWatcher = function(config, repo) {
+var GitHubWatcher = function(config) {
+    logger = logger(config.logging);
     var self = this;
-    Repo = repo;
     events.EventEmitter.call(self);
     self.repos = [];
     self.org = config.org;
-    self.repo_base = config.paths.repo_base;
 
     var github_auth = spore.middlewares.basic(
             config.github_auth.user, config.github_auth.pw
             );
 
-    /*
     var github_pager = function(method, request, next) {
         next(function(response, next) {
-            console.log("IN RESPONSE MIDDLEWARE");
-            console.log(response.headers);
-
+            var link = response.headers.link;
+            if (link) {
+                var parsed = lp(link);
+                if (parsed.next) {
+                    self.github.nextPage = parsed.next;
+                    logger.log(" -> Next page " + parsed.nextPage + ", total: " + parsed.lastPage);
+                } else {
+                    self.github.nextPage = undefined;
+                }
+            }
             next();
         });
     };
-    */
 
     spore.createClientWithUrl(
             config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/org3.json',
             function(err, client) {
                 if (err) return logger.error("creating spore client failed: " + err);
                 client.enable(github_auth);
+                client.enable(github_pager);
                 client.enable(spore.middlewares.json());
-                //client.enable(github_pager);
                 self.github = client;
             }
             );
@@ -60,16 +65,27 @@ GitHubWatcher.prototype.poll = function() {
         return logger.info("spore client not ready");
     }
     logger.log("GitHubWatcher:".green + " Scheduled: Updating repos from GitHub.");
-    this.github.list_org_repos(
+    var responder;
+    responder = function(err, resp) {
+        if (err) return logger.error(err);
+        if (typeof(resp.body) == "undefined")
+            return logger.error("No repositories found in response: ", resp);
+        logger.log("GitHub:".cyan, resp.body.length);
+        self.process_github_repos(resp.body);
+        if (self.github.nextPage) {
+            logger.log("GitHub:".cyan, "have another page..");
+            self.github.get(self.github.nextPage, responder);
+        } else {
+            logger.log("GitHub:".cyan, "end of transmission");
+            self.emit("end");
+        }
+    };
+
+    self.github.list_org_repos(
             {format: 'json', org: this.org},
-            function(err, resp) {
-                if (err) return logger.error(err);
-                if (typeof(resp.body) == "undefined")
-                    return logger.error("No repositories found in response: ", resp);
-                logger.log("GitHub:".cyan, resp.body.length);
-                self.process_github_repos(resp.body);
-            }
+            responder
             );
+
 };
 GitHubWatcher.prototype.process_github_repos = function(repos) {
     var self = this;
