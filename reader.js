@@ -137,8 +137,10 @@ githubwatcher.on('repo', function(repo) {
             r.save(function(err) {
                 if (err) logger.error("inserting repo: " + err);
             });
+            gitwatcher.new_repo(r);
+        } else {
+            gitwatcher.add_repo(r);
         }
-        gitwatcher.new_repo(r);
         githubevents.add_repo(r);
     });
 });
