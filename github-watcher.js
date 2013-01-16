@@ -22,7 +22,7 @@ var GitHubWatcher = function(config) {
                 var parsed = lp(link);
                 if (parsed.next) {
                     self.github.nextPage = parsed.next;
-                    logger.log(" -> Next page " + parsed.nextPage + ", total: " + parsed.lastPage);
+                    logger.debug(" -> Next page " + parsed.nextPage + ", total: " + parsed.lastPage);
                 } else {
                     self.github.nextPage = undefined;
                 }
@@ -73,7 +73,7 @@ GitHubWatcher.prototype.poll = function() {
         logger.log("GitHub:".cyan, resp.body.length);
         self.process_github_repos(resp.body);
         if (self.github.nextPage) {
-            logger.log("GitHub:".cyan, "have another page..");
+            logger.debug("GitHub:".cyan, "have another page..");
             self.github.get(self.github.nextPage, responder);
         } else {
             logger.log("GitHub:".cyan, "end of transmission");
