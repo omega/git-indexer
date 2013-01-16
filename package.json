@@ -11,5 +11,15 @@
     , "soupselect": ">= 0.2.0"
     , "colors": ">= 0.5.0"
     , "spore": ">= 0.1.5"
+  },
+  "devDependencies": {
+      "tap": ">= 0.3.3"
+  },
+  "scripts": {
+      "test": "tap -t 1000 ./t"
+  },
+  "directories": {
+    "test": "t"
   }
+
 }
