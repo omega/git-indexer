@@ -138,8 +138,8 @@ githubwatcher.on('repo', function(repo) {
                 if (err) logger.error("inserting repo: " + err);
             });
         }
-        gitwatcher.new_repo(repo);
-        githubevents.add_repo(repo);
+        gitwatcher.new_repo(r);
+        githubevents.add_repo(r);
     });
 });
 
