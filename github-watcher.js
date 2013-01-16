@@ -70,7 +70,7 @@ GitHubWatcher.prototype.poll = function() {
         if (err) return logger.error(err);
         if (typeof(resp.body) == "undefined")
             return logger.error("No repositories found in response: ", resp);
-        logger.log("GitHub:".cyan, resp.body.length);
+        logger.debug("GitHub:".cyan, resp.body.length);
         self.process_github_repos(resp.body);
         if (self.github.nextPage) {
             logger.debug("GitHub:".cyan, "have another page..");
