@@ -63,7 +63,11 @@ Logger.prototype._log = function(level) {
         }
         args.unshift(str[this.config.colors[level]]);
         if (level == "debug") level = "log";
-        console[level].apply(console, args);
+        if (this.config.stderr) {
+            console.warn.apply(console, args);
+        } else {
+            console[level].apply(console, args);
+        }
         args.shift(); // get that damn label of again
     }
     if (c & 0x2) { // log to buffer as well
