@@ -120,18 +120,27 @@ gitwatcher.on('commit', function(commit) {
     }
 });
 
-var githubwatcher = new GitHubWatcher(config, Repo);
-githubwatcher.on('new-repo', function(repo) {
+var githubwatcher = new GitHubWatcher(config);
+githubwatcher.on('repo', function(repo) {
     if (!is_included(repo.name)) return;
-    //console.log("  new-repo emitted", repo);
-    gitwatcher.new_repo(repo);
-    githubevents.add_repo(repo);
-});
-githubwatcher.on('old-repo', function(repo) {
-    if (!is_included(repo.name)) return;
-    //console.log(" old-repo".bold, repo);
-    gitwatcher.add_repo(repo);
-    githubevents.add_repo(repo);
+    logger.debug("Looking for", repo.owner.login, repo.name);
+    Repo.findOne({'user': repo.owner.login, 'name': repo.name}, function(err, r) {
+        if (err) {
+            logger.error("Fetching repo: " + err);
+        } else if (!r) {
+            logger.info("New repo found: " + repo.name);
+            r = new Repo({
+                user: repo.owner.login,
+              name: repo.name
+            });
+            r.filepath = path.join(self.repo_base, r.safename);
+            r.save(function(err) {
+                if (err) logger.error("inserting repo: " + err);
+            });
+        }
+        gitwatcher.new_repo(repo);
+        githubevents.add_repo(repo);
+    });
 });
 
 function is_included(reponame) {

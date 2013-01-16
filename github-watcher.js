@@ -71,34 +71,13 @@ GitHubWatcher.prototype.poll = function() {
             }
             );
 };
-var GIT_LIMIT = 300;
 GitHubWatcher.prototype.process_github_repos = function(repos) {
     var self = this;
     repos.forEach(function(repo) {
         // We simply emit an event here? No checking for existance?
+        self.emit("repo", repo);
+
         //console.log("GIT_LIMIT: ", GIT_LIMIT);
-        if (GIT_LIMIT < 1) return;
-        GIT_LIMIT--;
-        //logger.debug("Looking for", repo.owner.login, repo.name);
-        Repo.findOne({'user': repo.owner.login, 'name': repo.name}, function(err, r) {
-            if (err) {
-                logger.error("Fetching repo: " + err);
-            } else if (!r) {
-                logger.info("New repo found: " + repo.name);
-                r = new Repo({
-                    user: repo.owner.login,
-                    name: repo.name
-                });
-                r.filepath = path.join(self.repo_base, r.safename);
-                r.save(function(err) {
-                    if (err) logger.error("inserting repo: " + err);
-                });
-                self.emit("new-repo", r);
-            } else {
-                self.emit("old-repo", r);
-            }
-        });
     });
-    GIT_LIMIT = 200;
 }
 
