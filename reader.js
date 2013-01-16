@@ -133,7 +133,7 @@ githubwatcher.on('repo', function(repo) {
                 user: repo.owner.login,
               name: repo.name
             });
-            r.filepath = path.join(self.repo_base, r.safename);
+            r.filepath = path.join(config.paths.repo_base, r.safename);
             r.save(function(err) {
                 if (err) logger.error("inserting repo: " + err);
             });
