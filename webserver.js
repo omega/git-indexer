@@ -18,7 +18,7 @@ db.on('error', console.error.bind(console, "connection error:"));
 
 
 var WebServer = function(config) {
-    this.port = config.web.port || 8091;
+    this.port = process.env.PORT || config.web.port || 8091;
 };
 
 WebServer.prototype.start = function() {
