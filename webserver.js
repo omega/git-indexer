@@ -117,13 +117,10 @@ WebServer.prototype.handle_status = function(nothing, resp) {
         var last = events[0].date;
 
         events.forEach(function(e) {
-            console.log(e, last, typeof(e), typeof(last));
             if (e.date.getTime() > last.getTime()) {
                 last = e.date;
             }
         });
-
-        console.log(last);
 
         resp.writeHead(200, {"Content-Type": "application/json"});
         resp.write(JSON.stringify({ 'last-event': last }));
