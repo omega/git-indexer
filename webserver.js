@@ -118,7 +118,7 @@ WebServer.prototype.handle_status = function(nothing, resp) {
 
         events.forEach(function(e) {
             console.log(e);
-            if (e > last) {
+            if (e.date.getTime() > last.getTime()) {
                 last = e;
             }
         });
