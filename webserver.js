@@ -109,6 +109,30 @@ WebServer.prototype.handle_issues_for_repo = function(repo, resp) {
     });
 };
 
+
+WebServer.prototype.handle_status = function(nothing, resp) {
+    Issue.find({}, {'events.date': 1 }).sort({ 'events.date': -1 }).limit(1).exec( function(err, issue) {
+        var events = issue[0].events;
+
+        var last = events[0].date;
+
+        events.forEach(function(e) {
+            console.log(e);
+            if (e > last) {
+                last = e;
+            }
+        });
+
+        console.log(last);
+
+        resp.writeHead(200, {"Content-Type": "application/json"});
+        resp.write(JSON.stringify({ 'last-event': last }));
+        resp.end();
+    });
+};
+
+
+
 module.exports = WebServer;
 
 var WS = new WebServer(config);
