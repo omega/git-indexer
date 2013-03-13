@@ -5,6 +5,7 @@ var models = require('./models.js'),
     http   = require('http'),
     mongoose = require('mongoose'),
     url = require('./url.js'),
+    fs = require("fs"),
     colors = require('colors'),
     Issue
     ;
@@ -14,7 +15,7 @@ mongoose.connection.on('error', function(err) {
     console.error("MongoDB error: ", err);
 });
 var db = mongoose.createConnection(config.mongo);
-db.on('error', console.error.bind(console, "connection error:"));
+
 
 
 var WebServer = function(config) {
@@ -128,6 +129,15 @@ WebServer.prototype.handle_status = function(nothing, resp) {
     });
 };
 
+if (config.restartfile) {
+    WebServer.prototype.handle_readerrestart = function(nothing, resp) {
+        fs.openSync(config.restartfile, "w");
+        resp.writeHead(200, {"Content-Type": "application/json"});
+        resp.write(JSON.stringify({ 'restart': 'ok' }));
+        resp.end();
+    };
+}
+
 
 
 module.exports = WebServer;
@@ -137,4 +147,7 @@ db.once('open', function() {
     logger.info("we are connected to mongodb, starting WS");
     Issue = db.model('Issue');
     WS.start();
+});
+db.on('error', function(err) {
+    console.log("connection error:", err);
 });
