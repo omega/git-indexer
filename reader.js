@@ -164,6 +164,27 @@ function is_included(reponame) {
 
 });
 
+
+if (config.restartfile) {
+    logger.log("Listening for restart file changes");
+    timers.restarter = setInterval(function() {
+        // Check for existance of a file, and if that file is there, remove it and
+        // exit, to trigger a forever restart?
+        fs.exists(config.restartfile, function(result) {
+            if (result) {
+                logger.log("Restarting due to existance of restartfile");
+                fs.unlink(config.restartfile, function(err) {
+                    if (err) {
+                        logger.log("Problems unlinking restart file? " + err);
+                    }
+                    process.exit(1);
+                });
+            }
+        });
+    }, 10000);
+}
+
+
 /*
 var memory = process.memoryUsage();
 var max = memory;
