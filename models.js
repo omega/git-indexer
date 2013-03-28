@@ -148,7 +148,7 @@ function defineModels() {
         return this.user + "-" + this.name;
     });
 
-    Repo.method("pull", function(worker) {
+    Repo.method("pull", function(worker, cb) {
         if (!this.cloned()) {
             // Need to clone it!
             logger.log("Turning a pull into a clone on ".red + this.safename);
@@ -163,9 +163,38 @@ function defineModels() {
             }
             //if (err) throw err;
             //if (stderr) console.log("ERR: " + stderr);
-            worker.finish(err);
+            if (typeof(cb) == "function") {
+                cb();
+            } else {
+                worker.finish(err);
+            }
         });
     });
+    Repo.method("describe", function(branch, cb) {
+        if (!this.cloned()) {
+            logger.info("Repo ".green + "ooops, calling describe on uncloned repo is not supported ".red
+                    + this.safename
+                    );
+            cb("Not cloned");
+        }
+        var repo = this;
+        repo.pull(null, function() {
+            exec("git describe --tags origin/" + branch,
+                {cwd: repo.filepath},
+                function(err, stdout, stderr) {
+                    logger.debug("Repo ".green + "describe output: ", err, stdout, stderr);
+                    if (err) {
+                        return cb("Wrong branch?");
+                    }
+                    var m = stdout.match(/^(.*)-(\d+)-([a-z0-9]+)\n$/);
+                    cb(err, m[1], m[2], m[3]);
+                }
+                );
+        });
+    });
+
+
+
 
     mongoose.model("Repo", Repo);
 }
