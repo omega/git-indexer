@@ -7,7 +7,7 @@ var models = require('./models.js'),
     url = require('./url.js'),
     fs = require("fs"),
     colors = require('colors'),
-    Issue
+    Issue, Repo
     ;
 
 models.defineModels();
@@ -146,6 +146,7 @@ var WS = new WebServer(config);
 db.once('open', function() {
     logger.info("we are connected to mongodb, starting WS");
     Issue = db.model('Issue');
+    Repo = db.model('Repo');
     WS.start();
 });
 db.on('error', function(err) {
