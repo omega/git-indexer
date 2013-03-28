@@ -37,7 +37,7 @@ WebServer.prototype.start = function() {
         var path = r.path_as_array;
         var handler = self['handle_' + path[0]];
         if (handler) {
-            handler(path[1], resp);
+            handler.call(self, path[1], resp, r);
         }
         else if (r.query.issue) {
             self.handle_issue(r.query.issue, resp);
@@ -49,6 +49,20 @@ WebServer.prototype.start = function() {
         }
     }).listen(self.port);
     logger.log("WebServer".cyan, "started, listening on http://localhost:" + this.port + "/");
+};
+WebServer.prototype.respond_x   = function(resp, code, body) {
+    resp.writeHead(code, {"Content-Type": "application/json"});
+    resp.write(JSON.stringify( body ));
+    resp.end();
+};
+WebServer.prototype.respond_200 = function(resp, body) {
+    this.respond_x(resp, 200, body);
+};
+WebServer.prototype.respond_404 = function(resp, error) {
+    if (!error) {
+        error = "Not found";
+    }
+    this.respond_x(resp, 404, { 'error': 'Not found', 'message': error });
 };
 
 WebServer.prototype.handle_log = function(r, resp) {
@@ -66,19 +80,15 @@ WebServer.prototype.handle_log = function(r, resp) {
 };
 
 WebServer.prototype.handle_repos = function(dummy, resp) {
-    resp.writeHead(200, {"Content-Type": "application/json"});
-    resp.write(JSON.stringify(config.repos.inc));
-    resp.end();
+    this.respond_200(resp, config.repos.inc);
 };
 
 WebServer.prototype.handle_issue = function(issue, resp) {
-    resp.writeHead(200, {"Content-Type": "application/json"});
     if (!issue) {
         // No issue specified, lets return empty
-        resp.write(JSON.stringify({ 'error': 'No issue specified' }));
-        resp.end();
-        return;
+        return this.respond_404(resp, "No issue specified");
     }
+    resp.writeHead(200, {"Content-Type": "application/json"});
     Issue.findOne({'key': issue}).exec(function(err, issue) {
         if (err) logger.error(err);
 
