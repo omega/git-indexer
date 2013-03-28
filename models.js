@@ -99,7 +99,22 @@ function defineModels() {
             return false;
         }
     });
-
+    Repo.method("reclone", function(worker) {
+        var repo = this;
+        logger.info("Repo".green + " recloning " + repo.safename);
+        // should remove old, then call clone?
+        logger.debug("Repo".green + " base: " + base);
+        exec("rm -rf " + repo.safename, { cwd: base },
+            function(err, stdout, stderr) {
+                console.log(err, stdout, stderr);
+                process.exit(1)
+                if (err) {
+                    logger.error("Repo".green + " Error removing: " + err + ", " + stderr + ", " + stdout);
+                    return worker.finish();
+                }
+                repo.clone(worker);
+            });
+    });
     Repo.method("clone", function(worker) {
         var repo = this;
         if (repo.cloned()) return; // No need to clone again

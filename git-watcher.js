@@ -50,6 +50,7 @@ GitWatcher.prototype.add_repo = function(repo) {
     }
 };
 GitWatcher.prototype.scan = function(repo) {
+    logger.debug("scan " + repo.safename);
     if (!repo.cloned()) {
         logger.log("Turning a scan into a clone on ".red + repo.safename);
         return gitchain.add(function(worker) {
@@ -58,12 +59,23 @@ GitWatcher.prototype.scan = function(repo) {
     }
     var self = this;
     gitchain.add(function(worker) {
+        logger.debug("New Walker".red);
         var walker = new Walker(repo);
         walker.on("commit", function(commit) {
             self.emit("commit", commit);
         });
-        walker.on("end", function() {
-            worker.finish();
+        walker.on("end", function(err) {
+            if (err) {
+                logger.error("Error in walker end: " + err);
+                if (err == "EGITBRANCH") {
+                    // Should try a reclone..
+                    repo.reclone(worker);
+                } else {
+                    worker.finish();
+                }
+            } else {
+                worker.finish();
+            }
         });
         walker.walk();
     }, "scan:" + repo.safename);
@@ -112,11 +124,11 @@ Walker.prototype = Object.create(events.EventEmitter.prototype, {
 Walker.prototype.walk = function() {
     // Get a list of branches in this repo
     var self = this;
-    //console.log(" WALKER: ".blue + self.repo.safename);
+    logger.debug(" WALKER: ".blue + self.repo.safename);
     exec("git branch -r | grep -v '\\->'", {cwd: self.repo.filepath}, function(err, stdout, stderr) {
         if (err) {
             logger.error("git branch -r failed on " + self.repo.safename);
-            return self.emit("end");
+            return self.emit("end", "EGITBRANCH");
         }
         var branches = stdout.split(/\s+/g).filter(function(e) {
             return (e != "")
