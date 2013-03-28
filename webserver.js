@@ -147,13 +147,15 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
         if (err) {
             return self.respond_404(resp, err);
         }
-        console.log(err, repo);
+        if (!repo) {
+            return self.respond_404(resp, "No such repo found :(");
+        }
         repo.describe(branch, function(err, tag, nr, hash) {
             if (err) {
+                console.log("error from describe", err);
                 return self.respond_404(resp, err);
             }
             return self.respond_200(resp, {
-                'repo': repo,
                 'tag': tag,
                 'lag': nr,
                 'hash': hash
