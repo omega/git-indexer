@@ -175,7 +175,7 @@ function defineModels() {
             logger.info("Repo ".green + "ooops, calling describe on uncloned repo is not supported ".red
                     + this.safename
                     );
-            cb("Not cloned");
+            return cb("Not cloned");
         }
         var repo = this;
         repo.pull(null, function() {
