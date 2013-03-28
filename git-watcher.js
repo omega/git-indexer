@@ -59,7 +59,6 @@ GitWatcher.prototype.scan = function(repo) {
     }
     var self = this;
     gitchain.add(function(worker) {
-        logger.debug("New Walker".red);
         var walker = new Walker(repo);
         walker.on("commit", function(commit) {
             self.emit("commit", commit);
