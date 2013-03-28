@@ -62,8 +62,8 @@ GitHubWatcher.prototype.fakerepos = function(repos) {
     var self = this;
     // We have some repos included in config, lets just emit events for
     // those and be done!
+    logger.debug("GitHubWatcher ".green + "repos from config");
     repos.forEach(function(v) {
-        logger.debug("REPO FROM CONFIG: " + v);
         self.emit("repo", {
             name: v,
             owner: {

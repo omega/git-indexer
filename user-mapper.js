@@ -26,7 +26,7 @@ UserMapper.prototype.map = function(email, cb, err_cb) {
     // Fetch the url..
     var wrapped_cb = function(data) {
         var json = JSON.parse(data);
-        logger.debug("Setting cache for email: " + email);
+        logger.debug("UserMapper ".yellow + "Setting cache for email: " + email);
         self.cache[email] = {
             username: json.username
         };
