@@ -8,8 +8,9 @@ var GitHubWatcher = function(config) {
     logger = logger(config.logging);
     var self = this;
     events.EventEmitter.call(self);
-    self.repos = [];
+    self.repos = config.repos.inc;
     self.org = config.org;
+
 
     var github_auth = spore.middlewares.basic(
             config.github_auth.user, config.github_auth.pw
@@ -57,8 +58,27 @@ GitHubWatcher.prototype = Object.create(events.EventEmitter.prototype, {
                      enumerable: false
                  }
 });
+GitHubWatcher.prototype.fakerepos = function(repos) {
+    var self = this;
+    // We have some repos included in config, lets just emit events for
+    // those and be done!
+    repos.forEach(function(v) {
+        logger.debug("REPO FROM CONFIG: " + v);
+        self.emit("repo", {
+            name: v,
+            owner: {
+                login: self.org
+            }
+        });
+    });
+    return logger.info("repos.inc defined in config, faking repo info");
+
+};
 GitHubWatcher.prototype.poll = function() {
     var self = this;
+    if (self.repos) {
+        return self.fakerepos(self.repos);
+    }
     if(!self.github) {
         // Try again in a little while
         setTimeout(function() { self.poll() }, 2000);
