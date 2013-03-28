@@ -94,15 +94,15 @@ GitWatcher.prototype.new_repo = function(repo) {
 
 GitWatcher.prototype.repull = function() {
     var self = this;
-    logger.log(" GitWatcher".magenta.bold + ": repull  #repos: "
+    logger.log(" GitWatcher".magenta.bold + ": rescanning repos: "
             + this.repos.length.toString().bold.red);
 
     self.repos.forEach(function(repo) {
+        logger.debug(" GitWatcher".magenta.bold + ": scan repo: " + repo.safename);
         gitchain.add(function(worker) {
-            repo.pull(worker);
-        }, "pull:" + repo.safename, function(err) {
-            //console.log("Done pulling " + repo.safename);
             self.scan(repo);
+        }, "pull:" + repo.safename, function(err) {
+            logger.debug("did scan on " + repo);
         });
     });
 };
