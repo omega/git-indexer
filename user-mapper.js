@@ -19,7 +19,7 @@ UserMapper.prototype.map = function(email, cb, err_cb) {
 
     }
     if (self.cache[email]) {
-        logger.debug("Returning cached username for email: " + email);
+        //logger.debug("Returning cached username for email: " + email);
         return cb({username: self.cache[email].username});
     }
     var url = this.url.replace(/\$/, email);

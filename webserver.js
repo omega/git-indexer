@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var config = require('confu')(__dirname, 'config.json');
 var models = require('./models.js'),
-    logger = require("./logger")(),
+    logger = require("./logger")(config.logging),
     http   = require('http'),
     mongoose = require('mongoose'),
     url = require('./url.js'),

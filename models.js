@@ -1,7 +1,7 @@
 var Event, Issue, Repo;
 var config = require('confu')(__dirname, 'config.json');
 var events = require("events"),
-    logger = require("./logger")(),
+    logger = require("./logger")(config.logging),
     path = require("path"),
     exec = require("child_process").exec,
     colors = require('colors'),
