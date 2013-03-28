@@ -50,7 +50,7 @@ GitWatcher.prototype.add_repo = function(repo) {
     }
 };
 GitWatcher.prototype.scan = function(repo) {
-    logger.debug("scan " + repo.safename);
+    logger.debug(" GitWatcher".magenta.bold + ": scan repo: " + repo.safename);
     if (!repo.cloned()) {
         logger.log("Turning a scan into a clone on ".red + repo.safename);
         return gitchain.add(function(worker) {
@@ -98,12 +98,7 @@ GitWatcher.prototype.repull = function() {
             + this.repos.length.toString().bold.red);
 
     self.repos.forEach(function(repo) {
-        logger.debug(" GitWatcher".magenta.bold + ": scan repo: " + repo.safename);
-        gitchain.add(function(worker) {
-            self.scan(repo);
-        }, "pull:" + repo.safename, function(err) {
-            logger.debug("did scan on " + repo);
-        });
+        self.scan(repo);
     });
 };
 
