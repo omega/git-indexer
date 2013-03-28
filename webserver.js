@@ -139,6 +139,35 @@ WebServer.prototype.handle_status = function(nothing, resp) {
     });
 };
 
+WebServer.prototype.handle_commitlag = function(repo, resp, req) {
+    var self = this;
+    var branch = req.query.branch;
+
+    Repo.findOne({'user': config.org, 'name': repo}, function(err, repo) {
+        if (err) {
+            return self.respond_404(resp, err);
+        }
+        console.log(err, repo);
+        repo.describe(branch, function(err, tag, nr, hash) {
+            if (err) {
+                return self.respond_404(resp, err);
+            }
+            return self.respond_200(resp, {
+                'repo': repo,
+                'tag': tag,
+                'lag': nr,
+                'hash': hash
+            });
+        });
+    });
+};
+
+
+
+
+
+
+
 if (config.restartfile) {
     WebServer.prototype.handle_readerrestart = function(nothing, resp) {
         fs.openSync(config.restartfile, "w");
