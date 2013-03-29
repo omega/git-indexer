@@ -65,11 +65,11 @@ GitWatcher.prototype.scan = function(repo) {
         });
         walker.on("end", function(err) {
             if (err) {
-                logger.error("Error in walker end: " + err);
                 if (err == "EGITBRANCH") {
                     // Should try a reclone..
                     repo.reclone(worker);
                 } else {
+                    logger.error("Error in walker end: " + err);
                     worker.finish();
                 }
             } else {
