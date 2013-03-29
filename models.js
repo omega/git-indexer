@@ -119,12 +119,18 @@ function defineModels() {
         var repo = this;
         if (repo.cloned()) return; // No need to clone again
         // Should shell out and clone this repo to base and set this.filepath
-        logger.log("Should clone the repo: " + repo.name + " into " + repo.filepath + " BASE:" + base);
+        logger.log("Repo ".green + "Should clone the repo: "
+            + repo.name + " into " + repo.filepath + " BASE:" + base
+            );
 
         exec("git clone " + repo.real_origin() + " " + repo.safename , { cwd: base },
             function(err, stdout, stderr) {
                 if (err || stderr) {
-                    logger.error(err + " : " + stderr);
+                    if (stderr == "warning: You appear to have cloned an empty repository.\n") {
+                        // we ignore this error?
+                    } else {
+                        logger.error(err + " : " + stderr);
+                    }
                 } else {
                     logger.info("Clone of " + repo.safename + " completed");
                 }

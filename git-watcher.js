@@ -118,10 +118,10 @@ Walker.prototype = Object.create(events.EventEmitter.prototype, {
 Walker.prototype.walk = function() {
     // Get a list of branches in this repo
     var self = this;
-    //logger.debug(" WALKER: ".blue + self.repo.safename);
+    logger.debug(" WALKER: ".blue + self.repo.safename);
     exec("git branch -r | grep -v '\\->'", {cwd: self.repo.filepath}, function(err, stdout, stderr) {
         if (err) {
-            logger.error(" WALKER: ".blue + "git branch -r failed on " + self.repo.safename);
+            logger.debug(" WALKER: ".blue + "git branch -r failed on " + self.repo.safename);
             return self.emit("end", "EGITBRANCH");
         }
         var branches = stdout.split(/\s+/g).filter(function(e) {
