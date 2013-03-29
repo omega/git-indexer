@@ -104,23 +104,23 @@ function defineModels() {
     Repo.method("reclone", function(worker) {
         var repo = this;
         repo.errcount = repo.errcount + 1 || 1;
-        logger.debug("Repo ".green + repo.safename + " error count: " + repo.errcount);
+        logger.debug("Repo.reclone ".green + repo.safename + " error count: " + repo.errcount);
         repo.save(function(err, obj) {
             if (err) {
-                logger.error("Repo ".green + "error updating error count..." + err);
+                logger.error("Repo.reclone ".green + "error updating error count..." + err);
             }
         });
         if (repo.errcount >= 10) {
             if (repo.errcount == 10 || repo.errcount == 11) {
-                logger.info("Repo ". green + repo.safename
+                logger.info("Repo.reclone ". green + repo.safename
                     + " 10 errcount, ignoring reclone attempts");
             }
             return;
         }
 
-        logger.info("Repo".green + " recloning " + repo.safename + " errcount: " . repo.errcount.toString().red);
+        logger.info("Repo.reclone ".green + repo.safename + " errcount: " + repo.errcount.toString().red);
         // should remove old, then call clone?
-        logger.debug("Repo".green + " base: " + base);
+        logger.debug("Repo.reclone".green + " base: " + base);
         exec("rm -rf " + repo.safename, { cwd: base },
             function(err, stdout, stderr) {
                 logger.debug("Repo ".green + err + ":" + stdout + " - " + stderr);
@@ -135,7 +135,7 @@ function defineModels() {
         var repo = this;
         if (repo.cloned()) return; // No need to clone again
         // Should shell out and clone this repo to base and set this.filepath
-        logger.log("Repo ".green + "Should clone the repo: "
+        logger.log("Repo.clone ".green + "Should clone the repo: "
             + repo.name + " into " + repo.filepath + " BASE:" + base
             );
 
@@ -148,7 +148,7 @@ function defineModels() {
                         logger.error(err + " : " + stderr);
                     }
                 } else {
-                    logger.info("Clone of " + repo.safename + " completed");
+                    logger.info("Repo.clone ".green + "Clone of " + repo.safename + " completed");
                 }
                 worker.finish(err);
             });
