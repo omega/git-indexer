@@ -163,7 +163,7 @@ function defineModels() {
         var repo = this;
         logger.debug("Pulling: ".blue + repo.safename);
         // Should run git pull in the filepath
-        exec("git fetch -q", {cwd: repo.filepath}, function(err,stdout, stderr) {
+        exec("git fetch -pq", {cwd: repo.filepath}, function(err,stdout, stderr) {
             if (err) {
                 logger.error("(pull of " + repo.safename + ")" + err + " : " + stderr);
             }
