@@ -92,7 +92,9 @@ GitWatcher.prototype.new_repo = function(repo) {
 GitWatcher.prototype.repull = function() {
     var self = this;
     if (gitchain.queue.length > 50) {
-        logger.info(" GitWatcher".magenta.bold + " gitchain queue over 50, not adding more");
+        logger.info(" GitWatcher".magenta.bold + " gitchain queue over 50 ("
+                + gitchain.queue.length.toString().bold.red
+                + "), not adding more");
         return;
     }
     logger.log(" GitWatcher".magenta.bold + ": rescanning repos: "
