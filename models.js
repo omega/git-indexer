@@ -106,7 +106,7 @@ function defineModels() {
         logger.debug("Repo".green + " base: " + base);
         exec("rm -rf " + repo.safename, { cwd: base },
             function(err, stdout, stderr) {
-                console.log(err, stdout, stderr);
+                logger.debug("Repo ".green + err + ":" + stdout + " - " + stderr);
                 if (err) {
                     logger.error("Repo".green + " Error removing: " + err + ", " + stderr + ", " + stdout);
                     return worker.finish();
