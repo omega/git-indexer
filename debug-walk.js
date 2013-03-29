@@ -37,7 +37,11 @@ db.once('open', function() {
         });
         walker.on("commit", function(commit) {
             if (bugs = commit.message.match(/([A-Z]+-\d+)/g)) {
-                logger.info(commit.sha.substr(0,8).toString().red + " : " + bugs.join(", "));
+                logger.info(
+                    commit.sha.substr(0,8).toString().red +
+                    " : " + bugs.join(", ") +
+                    " <" + commit.date + ">"
+                );
             }
         });
         walker.walk();
