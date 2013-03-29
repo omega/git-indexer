@@ -47,6 +47,9 @@ db.once('open', function() {
     timers.repo_fetcher = setInterval(function() {
         githubwatcher.poll();
     }, 600 * 1000);
+    timers.gitwatcher = setInterval(function() {
+        gitwatcher.repull();
+    }, 600 * 1000);
 
 
 var githubevents = new GitHubEvents(config);

@@ -23,10 +23,6 @@ var GitWatcher = function() {
     events.EventEmitter.call(self);
     this.repos = [];
 
-    // XXX: Setup a timer here to pull all repos?
-    this.timer = setInterval(function() {
-        self.repull();
-    }, 60000);
 }
 ;
 

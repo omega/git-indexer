@@ -96,7 +96,7 @@ GitHubWatcher.prototype.poll = function() {
             logger.debug("GitHub:".cyan, "have another page..");
             self.github.get(self.github.nextPage, responder);
         } else {
-            logger.log("GitHub:".cyan, "end of transmission");
+            logger.log("GitHubWatcher: ".green, "end of transmission");
             self.emit("end");
         }
     };
