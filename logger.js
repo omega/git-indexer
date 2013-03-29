@@ -62,6 +62,8 @@ Logger.prototype._log = function(level) {
             str = " " + str;
         }
         args.unshift(str[this.config.colors[level]]);
+        var n = new Date();
+        args.unshift(n.getHours() + ":" + n.getMinutes());
         if (level == "debug") level = "log";
         if (this.config.stderr) {
             console.warn.apply(console, args);
