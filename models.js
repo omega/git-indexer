@@ -69,6 +69,7 @@ function defineModels() {
         if (self.has_event(e.id)) worker.finish(); // nothing to do
         else {
             //console.log("  Adding " + e.id);
+            logger.info("Issue ".green + "New event for issue " + self.key);
             self.events.push(e);
             self.add_repo_for_event(e);
             self.save(function(err, obj) {
