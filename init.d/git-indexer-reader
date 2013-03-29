@@ -110,7 +110,7 @@ start() {
     # We're only using it as a marker for whether or not the process is
     # running.
     forever --pidFile $PIDFILE --sourceDir $APPLICATION_DIRECTORY \
-        -a -l $LOGFILE --minUptime 5000 --spinSleepTime 2000 \
+        -l $LOGFILE --minUptime 5000 --spinSleepTime 2000 \
         start $APPLICATION_START &
     RETVAL=$?
 }

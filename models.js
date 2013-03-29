@@ -87,7 +87,8 @@ function defineModels() {
         'user'       : { 'type': String },
         'name'       : { 'type': String },
         'last_seen'  : { 'type': String },
-        'filepath'   : String
+        'filepath'   : String,
+         'errcount'  : Number,
     });
 
     /* this returns true if we have a clone, false otherwise */
@@ -102,6 +103,21 @@ function defineModels() {
     });
     Repo.method("reclone", function(worker) {
         var repo = this;
+        repo.errcount = repo.errcount + 1 || 1;
+        logger.debug("Repo ".green + repo.safename + " error count: " + repo.errcount);
+        repo.save(function(err, obj) {
+            if (err) {
+                logger.error("Repo ".green + "error updating error count..." + err);
+            }
+        });
+        if (repo.errcount >= 10) {
+            if (repo.errcount == 10 || repo.errcount == 11) {
+                logger.info("Repo ". green + repo.safename
+                    + " 10 errcount, ignoring reclone attempts");
+            }
+            return;
+        }
+
         logger.info("Repo".green + " recloning " + repo.safename);
         // should remove old, then call clone?
         logger.debug("Repo".green + " base: " + base);

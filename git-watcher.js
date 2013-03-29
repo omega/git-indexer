@@ -67,6 +67,7 @@ GitWatcher.prototype.scan = function(repo) {
             if (err) {
                 if (err == "EGITBRANCH") {
                     // Should try a reclone..
+                    logger.debug("recloning " + repo.safename);
                     repo.reclone(worker);
                 } else {
                     logger.error("Error in walker end: " + err);
