@@ -118,7 +118,7 @@ function defineModels() {
             return;
         }
 
-        logger.info("Repo".green + " recloning " + repo.safename);
+        logger.info("Repo".green + " recloning " + repo.safename + " errcount: " . repo.errcount.toString().red);
         // should remove old, then call clone?
         logger.debug("Repo".green + " base: " + base);
         exec("rm -rf " + repo.safename, { cwd: base },
