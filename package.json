@@ -3,7 +3,7 @@
   , "version": "0.0.1"
   , "private": true
   , "dependencies": {
-      "chain-gang": ">= 1.0.0-beta4"
+      "chain-gang": ">= 1.0.0-beta6"
     , "confu": ">= 0.0.3"
     , "mongoose": ">= 1.5.0"
     , "htmlparser": ">= 1.7.3"

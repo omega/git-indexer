@@ -92,7 +92,11 @@ GitWatcher.prototype.new_repo = function(repo) {
 GitWatcher.prototype.repull = function() {
     var self = this;
     logger.log(" GitWatcher".magenta.bold + ": rescanning repos: "
-            + this.repos.length.toString().bold.red);
+            + this.repos.length.toString().bold.red
+            + " gitchain queue size: "
+            + gitchain.queue.length.toString().bold.red
+            );
+    logger.log(gitchain.checkStatus());
 
     self.repos.forEach(function(repo) {
         self.scan(repo);
