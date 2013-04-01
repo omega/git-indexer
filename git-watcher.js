@@ -24,10 +24,10 @@ gitchain.on("empty", function() {
 });
 
 setInterval(function() {
-    logger.info(" GitWatcher ".magenta.bold + " gitchain queue: "
+    logger.debug(" GitWatcher ".magenta.bold + " gitchain queue: "
                 + gitchain.queue.length.toString().bold.red
         );
-}, 10 * 1000);
+}, 60 * 1000);
 
 var GitWatcher = function() {
     var self = this;
