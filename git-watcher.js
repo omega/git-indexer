@@ -20,7 +20,10 @@ gitchain.on("finished", function(name) {
 */
 
 gitchain.on("empty", function() {
-    logger.info(" GitWatcher ".magenta.bold + " empty gitchain, current active: "
+    if (gitchain.current) {
+        return; // We ignore so long as there are still active jobs
+    }
+    logger.debug(" GitWatcher ".magenta.bold + " empty gitchain, current active: "
         + gitchain.current.toString().red.bold
         );
 });
