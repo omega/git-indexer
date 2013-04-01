@@ -23,7 +23,7 @@ gitchain.on("empty", function() {
     logger.info(" GitWatcher ".magenta.bold + " empty gitchain");
 });
 
-setTimeout(function() {
+setInterval(function() {
     logger.info(" GitWatcher ".magenta.bold + " gitchain queue: "
                 + gitchain.queue.length.toString().bold.red
         );
