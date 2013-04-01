@@ -20,7 +20,9 @@ gitchain.on("finished", function(name) {
 */
 
 gitchain.on("empty", function() {
-    logger.info(" GitWatcher ".magenta.bold + " empty gitchain");
+    logger.info(" GitWatcher ".magenta.bold + " empty gitchain, current active: "
+        + gitchain.current.toString().red.bold
+        );
 });
 
 setInterval(function() {
