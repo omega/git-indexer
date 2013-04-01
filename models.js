@@ -186,7 +186,7 @@ function defineModels() {
             //if (err) throw err;
             //if (stderr) console.log("ERR: " + stderr);
             if (typeof(cb) == "function") {
-                cb();
+                cb(err);
             } else {
                 worker.finish(err);
             }
