@@ -18,6 +18,17 @@ gitchain.on("finished", function(name) {
     console.log("-GITCHAIN: ".blue + name.replace(/([a-z]{4})/, "$1".bold));
 });
 */
+
+gitchain.on("empty", function() {
+    logger.info(" GitWatcher ".magenta.bold + " empty gitchain");
+});
+
+setTimeout(function() {
+    logger.info(" GitWatcher ".magenta.bold + " gitchain queue: "
+                + gitchain.queue.length.toString().bold.red
+        );
+}, 10 * 1000);
+
 var GitWatcher = function() {
     var self = this;
     events.EventEmitter.call(self);
