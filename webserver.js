@@ -65,6 +65,18 @@ WebServer.prototype.respond_404 = function(resp, error) {
     this.respond_x(resp, 404, { 'error': 'Not found', 'message': error });
 };
 
+WebServer.prototype.get_repo = function(resp, repo, cb) {
+    Repo.findOne({'user': config.org, 'name': repo}, function(err, repo) {
+        if (err) {
+            return self.respond_404(resp, err);
+        }
+        if (!repo) {
+            return self.respond_404(resp, "No such repo found :(");
+        }
+        cb(repo);
+    });
+};
+
 WebServer.prototype.handle_log = function(r, resp) {
     resp.writeHead(200, {"Content-Type": "text/html;charset=utf-8"});
     resp.write("<html><head><title>git-indexer log</title>");
@@ -143,13 +155,7 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
     var self = this;
     var branch = req.query.branch;
 
-    Repo.findOne({'user': config.org, 'name': repo}, function(err, repo) {
-        if (err) {
-            return self.respond_404(resp, err);
-        }
-        if (!repo) {
-            return self.respond_404(resp, "No such repo found :(");
-        }
+    self.get_repo(resp, repo, function(repo) {
         repo.describe(branch, function(err, tag, nr, hash) {
             if (err) {
                 console.log("error from describe", err);
@@ -164,6 +170,20 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
     });
 };
 
+WebServer.prototype.handle_repull = function(repo, resp, req) {
+    var self = this;
+    self.get_repo(resp, repo, function(repo) {
+        repo.pull(null, function(err) {
+            if (err) {
+                return self.respond_500(resp, err);
+            }
+            return self.respond_200(resp, {
+                'message': 'repulled ' + repo.name
+            });
+
+        });
+    });
+};
 
 
 
