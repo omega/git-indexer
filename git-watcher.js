@@ -117,7 +117,7 @@ GitWatcher.prototype.repull = function() {
             + " gitchain queue size: "
             + gitchain.queue.length.toString().bold.red
             );
-    logger.log(gitchain.checkStatus());
+    logger.debug(gitchain.checkStatus());
 
     self.repos.forEach(function(repo) {
         self.scan(repo);
