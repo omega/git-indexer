@@ -51,6 +51,13 @@ module.exports = function(config) {
     return new Logger(config);
 };
 
+Logger.prototype.ts = function(n) {
+    return [
+        "0".concat(n.getHours()).substr(-2),
+        "0".concat(n.getMinutes()).substr(-2)
+    ].join(":");
+};
+
 Logger.prototype._log = function(level) {
     if (!this.config.levels[level]) return;
     var c = this.config.levels[level];
@@ -62,8 +69,7 @@ Logger.prototype._log = function(level) {
             str = " " + str;
         }
         args.unshift(str[this.config.colors[level]]);
-        var n = new Date();
-        args.unshift(n.getHours() + ":" + n.getMinutes());
+        args.unshift(this.ts(new Date()));
         if (level == "debug") level = "log";
         if (this.config.stderr) {
             console.warn.apply(console, args);
