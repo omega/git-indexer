@@ -49,7 +49,7 @@ db.once('open', function() {
     }, 600 * 1000);
     timers.gitwatcher = setInterval(function() {
         gitwatcher.repull();
-    }, 600 * 1000);
+    }, 100 * 1000);
 
 
 var githubevents = new GitHubEvents(config);
