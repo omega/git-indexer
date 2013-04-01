@@ -33,7 +33,6 @@ var GitWatcher = function() {
     var self = this;
     events.EventEmitter.call(self);
     this.repos = [];
-
 }
 ;
 

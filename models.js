@@ -115,7 +115,7 @@ function defineModels() {
                 logger.info("Repo.reclone ". green + repo.safename
                     + " 10 errcount, ignoring reclone attempts");
             }
-            return;
+            return worker.finish();
         }
 
         logger.info("Repo.reclone ".green + repo.safename + " errcount: " + repo.errcount.toString().red);
