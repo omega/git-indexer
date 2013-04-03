@@ -211,7 +211,11 @@ function defineModels() {
                         return cb("Wrong branch?");
                     }
                     var m = stdout.match(/^(.*)-(\d+)-([a-z0-9]+)\n$/);
-                    cb(err, m[1], parseInt(m[2]), m[3]);
+                    if (m && m[1]) {
+                        cb(err, m[1], parseInt(m[2]), m[3]);
+                    } else {
+                        cb(err, stdout, 0, '');
+                    }
                 }
                 );
         });
