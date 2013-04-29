@@ -17,6 +17,7 @@ var GitHubWatcher = function(config) {
             );
 
     var github_pager = function(method, request, next) {
+        request.headers['User-Agent'] = 'git-indexer/0.01 (https://github.com/omega/git-indexer)';
         next(function(response, next) {
             var link = response.headers.link;
             if (link) {
