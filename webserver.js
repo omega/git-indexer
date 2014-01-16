@@ -92,7 +92,15 @@ WebServer.prototype.handle_log = function(r, resp) {
 };
 
 WebServer.prototype.handle_repos = function(dummy, resp) {
-    this.respond_200(resp, config.repos.inc);
+    var self = this;
+    if (config.repos && config.repos.inc) {
+
+        self.respond_200(resp, config.repos.inc);
+    } else {
+        Repo.find().exec(function(err, repos) {
+            self.respond_200(resp, repos.map(function(e) { return e.name }));
+        });
+    }
 };
 
 WebServer.prototype.handle_issue = function(issue, resp) {

@@ -8,7 +8,9 @@ var GitHubWatcher = function(config) {
     logger = logger(config.logging);
     var self = this;
     events.EventEmitter.call(self);
-    self.repos = config.repos.inc;
+    if (config.repos && config.repos.inc) {
+        self.repos = config.repos.inc;
+    }
     self.org = config.org;
 
 
@@ -89,7 +91,7 @@ GitHubWatcher.prototype.poll = function() {
     var responder;
     responder = function(err, resp) {
         if (err) return logger.error(err);
-        if (typeof(resp.body) == "undefined")
+        if (typeof(resp.body) == "undefined" || typeof(resp.body.length) == "undefined")
             return logger.error("No repositories found in response: ", resp);
         logger.debug("GitHub:".cyan, resp.body.length);
         self.process_github_repos(resp.body);
