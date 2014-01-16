@@ -203,16 +203,20 @@ function defineModels() {
         }
         var repo = this;
         repo.pull(null, function() {
-            exec("git describe --tags origin/" + branch,
+            exec("git describe --tags --long origin/" + branch + "; git log --tags -1 --format=%ai",
                 {cwd: repo.filepath},
                 function(err, stdout, stderr) {
                     logger.debug("Repo ".green + "describe output: ", err, stdout, stderr);
                     if (err) {
                         return cb("Wrong branch?");
                     }
-                    var m = stdout.match(/^(.*)-(\d+)-([a-z0-9]+)\n$/);
+                    lines = stdout.split("\n");
+                    console.log(lines);
+                    var m = lines[0].match(/^(.*)-(\d+)-([a-z0-9]+)$/);
+                    var date = new Date(lines[1]);
+                    logger.debug("Repo ".green + "Matches: " + m + " Date: " + date);
                     if (m && m[1]) {
-                        cb(err, m[1], parseInt(m[2]), m[3]);
+                        cb(err, m[1], parseInt(m[2]), m[3], date);
                     } else {
                         cb(err, stdout, 0, '');
                     }

@@ -164,7 +164,7 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
     var branch = req.query.branch;
 
     self.get_repo(resp, repo, function(repo) {
-        repo.describe(branch, function(err, tag, nr, hash) {
+        repo.describe(branch, function(err, tag, nr, hash, date) {
             if (err) {
                 console.log("error from describe", err);
                 return self.respond_404(resp, err);
@@ -172,7 +172,8 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
             return self.respond_200(resp, {
                 'tag': tag,
                 'lag': nr,
-                'hash': hash
+                'hash': hash,
+                'date': date.toISOString()
             });
         });
     });
