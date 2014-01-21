@@ -66,6 +66,7 @@ WebServer.prototype.respond_404 = function(resp, error) {
 };
 
 WebServer.prototype.get_repo = function(resp, repo, cb) {
+    var self = this;
     Repo.findOne({'user': config.org, 'name': repo}, function(err, repo) {
         if (err) {
             return self.respond_404(resp, err);
@@ -173,7 +174,7 @@ WebServer.prototype.handle_commitlag = function(repo, resp, req) {
                 'tag': tag,
                 'lag': nr,
                 'hash': hash,
-                'date': date.toISOString()
+                'date': date ? date.toISOString() : ''
             });
         });
     });
