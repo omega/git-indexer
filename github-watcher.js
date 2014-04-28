@@ -36,7 +36,7 @@ var GitHubWatcher = function(config) {
     };
 
     spore.createClientWithUrl(
-            config.githubspore || 'https://raw.github.com/omega/api-description/master/services/github/org3.json',
+            config.githubspore || 'https://raw.githubusercontent.com/omega/api-description/master/services/github/org3.json',
             function(err, client) {
                 if (err) return logger.error("creating spore client failed: " + err);
                 client.enable(github_auth);

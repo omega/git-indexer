@@ -90,7 +90,7 @@ gitwatcher.on('commit', function(commit) {
     if (typeof(commit.message) == "undefined") return;
     var bugs;
     if (bugs = commit.message.match(/([A-Z]+-\d+)/g)) {
-        console.debug( commit.repo.safename + " has bugs in " + commit.sha + ": " + commit.message);
+        logger.debug( commit.repo.safename + " has bugs in " + commit.sha + ": " + commit.message);
         bugs.forEach(function(bug) {
             commitchain.add(function(worker) {
                 Issue.findOne({key: bug}, function(err, issue) {
