@@ -203,7 +203,7 @@ function defineModels() {
         }
         var repo = this;
         repo.pull(null, function() {
-            exec("git describe --tags --long origin/" + branch + "&& git log --tags -1 --format=%ai",
+            exec("git describe --tags --long origin/" + branch + " --always && git log --tags -1 --format=%ai",
                 {cwd: repo.filepath},
                 function(err, stdout, stderr) {
                     logger.debug("Repo ".green + "describe output: ", err, stdout, stderr);
