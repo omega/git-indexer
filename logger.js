@@ -3,6 +3,7 @@ var colors = require('colors');
 
 var defaults = {
     levels: {
+        trace: 0,
         debug: 0,
         info : 0x1,
         warn : 0x1 | 0x2,
@@ -92,6 +93,11 @@ Logger.prototype._log = function(level) {
 Logger.prototype.log = function() {
     var args = Array.prototype.slice.call(arguments);
     args.unshift("info");
+    this._log.apply(this, args);
+};
+Logger.prototype.trace = function() {
+    var args = Array.prototype.slice.call(arguments);
+    args.unshift("trace");
     this._log.apply(this, args);
 };
 Logger.prototype.debug = function() {
